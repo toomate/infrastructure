@@ -15,3 +15,15 @@ variable "ipv6_qualquer" {
   type        = list(string)
   default     = ["::/0"]
 }
+
+variable "spring_porta" {
+  description = "Porta para aplicação Spring Boot"
+  type        = number
+  default     = 8080
+}
+
+variable "react_porta" {
+  description = "Porta para aplicação React"
+  type        = number
+  default     = 5173
+}
