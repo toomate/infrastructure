@@ -50,3 +50,12 @@ resource "terraform_data" "wait_for_build" {
     ]
   }
 }
+
+resource "terraform_data" "destroy_builder" {
+
+  depends_on = [aws_ami_from_instance.ami_toomate]
+
+  provisioner "local-exec" {
+    command = "aws ec2 terminate-instances --instance-ids ${aws_instance.builder_toomate.id}"
+  }
+}
