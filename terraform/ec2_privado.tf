@@ -1,18 +1,23 @@
 resource "aws_instance" "instancia_toomate_privada" {
-  ami           = "ami-0b6c6ebed2801a5cb"
+  count         = 2
+  ami           = "ami-0696a9b4619643b56"
   instance_type = "t2.medium"
   key_name      = "vockey"
 
-  subnet_id = aws_subnet.subnet_toomate_privado.id
+  subnet_id = element([
+    aws_subnet.subnet_toomate_privado.id,
+    aws_subnet.subnet_toomate_privado_2.id
+  ], count.index)
+
   vpc_security_group_ids = [aws_security_group.sg_privado_tag.id]
 
-  tags = {
-    Name = "Instancia privada Toomate"
+  root_block_device {
+    volume_size           = 16
+    volume_type           = "gp3"
+    delete_on_termination = true
   }
 
-  ebs_block_device {
-    device_name = "/dev/sda1"
-    volume_size = 16
-    volume_type = "gp3"
+  tags = {
+    Name = "Instancia privada Toomate ${count.index}"
   }
 }
