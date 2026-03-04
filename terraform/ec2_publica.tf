@@ -1,5 +1,5 @@
 resource "aws_instance" "instancia_toomate_publica" {
-  ami           = "ami-0696a9b4619643b56"
+  ami           = aws_ami_from_instance.ami_toomate.id
   instance_type = "t2.medium"
   key_name      = "vockey"
 
