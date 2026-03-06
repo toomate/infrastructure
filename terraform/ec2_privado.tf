@@ -19,6 +19,7 @@ resource "aws_instance" "instancia_toomate_privada" {
 
   user_data = <<-EOF
 #!/bin/bash
+cd /home/ubuntu
 docker compose up -d
 EOF
 

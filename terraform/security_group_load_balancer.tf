@@ -3,6 +3,13 @@ resource "aws_security_group" "sg_alb" {
   vpc_id = aws_vpc.vpc_toomate.id
 
   ingress {
+    from_port   = var.react_porta
+    to_port     = var.react_porta
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
     from_port   = 8080
     to_port     = 8080
     protocol    = "tcp"

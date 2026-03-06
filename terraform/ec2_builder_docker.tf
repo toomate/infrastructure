@@ -25,6 +25,47 @@ docker pull lucaspaessptech/toomate:database
 docker pull lucaspaessptech/toomate:backend
 docker pull lucaspaessptech/toomate:frontend
 
+cat <<EOT > /home/ubuntu/compose.yaml
+version: '3.8'
+
+services:
+
+  mysql:
+    image: lucaspaessptech/toomate:database
+    command: --lower_case_table_names=1
+    container_name: toomate_mysql
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: toomate
+    restart: always
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    image: lucaspaessptech/toomate:backend
+    container_name: toomate_backend
+    depends_on:
+      mysql:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/toomate
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+    restart: always
+
+volumes:
+  mysql_data:
+EOT
+
 touch /home/ubuntu/BUILD_COMPLETE
 EOF
 
@@ -33,11 +74,6 @@ EOF
     host        = self.public_ip
     user        = "ubuntu"
     private_key = file("labsuser.pem")
-  }
-
-  provisioner "file" {
-    source      = "compose.yaml"
-    destination = "/home/ubuntu/compose.yaml"
   }
 
   tags = {

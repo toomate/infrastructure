@@ -20,6 +20,13 @@ resource "aws_security_group" "sg_privado_tag" {
     security_groups = [aws_security_group.sg_alb.id]
   }
 
+  ingress {
+  from_port       = var.react_porta
+  to_port         = var.react_porta
+  protocol        = "tcp"
+  security_groups = [aws_security_group.sg_alb.id]
+}
+
   egress {
     from_port   = 0
     to_port     = 0
