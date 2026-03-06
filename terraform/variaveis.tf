@@ -25,5 +25,5 @@ variable "spring_porta" {
 variable "react_porta" {
   description = "Porta para aplicação React"
   type        = number
-  default     = 5173
+  default     = 80
 }

@@ -15,4 +15,9 @@ resource "aws_instance" "instancia_toomate_publica" {
     volume_size = 16
     volume_type = "gp3"
   }
+
+  user_data = <<-EOF
+#!/bin/bash
+docker run -e API_URL=http://${aws_lb.alb_toomate.dns_name} --name frontend -p 80:80 -d lucaspaessptech/toomate:frontend
+EOF
 }

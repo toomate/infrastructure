@@ -28,6 +28,18 @@ docker pull lucaspaessptech/toomate:frontend
 touch /home/ubuntu/BUILD_COMPLETE
 EOF
 
+  connection {
+    type        = "ssh"
+    host        = self.public_ip
+    user        = "ubuntu"
+    private_key = file("labsuser.pem")
+  }
+
+  provisioner "file" {
+    source      = "compose.yaml"
+    destination = "/home/ubuntu/compose.yaml"
+  }
+
   tags = {
     Name = "builder-toomate"
   }

@@ -13,15 +13,6 @@ resource "aws_security_group" "sg_publico_tag" {
   }
 
   ingress {
-    description      = "Permitir entrada https e https de todos os ips"
-    from_port        = var.spring_porta
-    to_port          = var.spring_porta
-    protocol         = "tcp"
-    cidr_blocks      = var.ip_qualquer
-    ipv6_cidr_blocks = var.ipv6_qualquer
-  }
-
-  ingress {
     description      = "Permitir entrada react de todos os ips"
     from_port        = var.react_porta
     to_port          = var.react_porta

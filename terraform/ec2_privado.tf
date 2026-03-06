@@ -17,6 +17,11 @@ resource "aws_instance" "instancia_toomate_privada" {
     delete_on_termination = true
   }
 
+  user_data = <<-EOF
+#!/bin/bash
+docker compose up -d
+EOF
+
   tags = {
     Name = "Instancia privada Toomate ${count.index}"
   }

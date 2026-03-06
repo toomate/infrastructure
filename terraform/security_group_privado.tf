@@ -17,7 +17,7 @@ resource "aws_security_group" "sg_privado_tag" {
     from_port       = var.spring_porta
     to_port         = var.spring_porta
     protocol        = "tcp"
-    security_groups = [aws_security_group.sg_publico_tag.id]
+    security_groups = [aws_security_group.sg_alb.id]
   }
 
   egress {
