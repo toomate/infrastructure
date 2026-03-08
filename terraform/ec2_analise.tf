@@ -1,4 +1,4 @@
-resource "aws_instance" "instancia_toomate_publica" {
+resource "aws_instance" "instancia_toomate_analise" {
   ami           = aws_ami_from_instance.ami_toomate.id
   instance_type = "t2.medium"
   key_name      = "vockey"
