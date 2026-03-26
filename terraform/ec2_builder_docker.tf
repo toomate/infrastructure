@@ -5,9 +5,13 @@ resource "aws_instance" "builder_toomate" {
   vpc_security_group_ids      = [aws_security_group.sg_publico_tag.id]
   associate_public_ip_address = true
   key_name                    = "vockey"
+  user_data_replace_on_change = true
 
   user_data = <<-EOF
 #!/bin/bash
+set -euxo pipefail
+exec > >(tee -a /var/log/user-data-builder.log) 2>&1
+
 apt-get update -y
 apt-get install -y ca-certificates curl gnupg lsb-release
 
@@ -21,9 +25,30 @@ $(lsb_release -cs) stable" > /etc/apt/sources.list.d/docker.list
 apt-get update -y
 apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
-docker pull lucaspaessptech/toomate:database
-docker pull lucaspaessptech/toomate:backend
-docker pull lucaspaessptech/toomate:frontend
+systemctl enable docker
+systemctl start docker
+
+for i in $(seq 1 30); do
+  if docker info >/dev/null 2>&1; then
+    break
+  fi
+  sleep 2
+done
+
+for image in lucaspaessptech/toomate:database lucaspaessptech/toomate:backend lucaspaessptech/toomate:frontend; do
+  for i in $(seq 1 12); do
+    if docker pull "$image"; then
+      break
+    fi
+    if [ "$i" -eq 12 ]; then
+      echo "Falha no pull da imagem $image"
+      exit 1
+    fi
+    sleep 10
+  done
+done
+
+docker image ls
 
 touch /home/ubuntu/BUILD_COMPLETE
 EOF

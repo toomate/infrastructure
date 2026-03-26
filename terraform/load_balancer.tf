@@ -18,7 +18,7 @@ resource "aws_lb_target_group" "tg_toomate" {
   target_type = "instance"
 
   health_check {
-    path                = "/actuator/health"
+    path                = "/v3/api-docs"
     port                = "traffic-port"
     protocol            = "HTTP"
     matcher             = "200"
