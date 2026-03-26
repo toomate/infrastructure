@@ -27,3 +27,9 @@ variable "react_porta" {
   type        = number
   default     = 80
 }
+
+variable "database_porta" {
+  description = "Porta para banco de dados MySQL"
+  type        = number
+  default     = 3306
+}

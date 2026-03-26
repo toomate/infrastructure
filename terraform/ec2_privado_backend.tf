@@ -20,7 +20,12 @@ resource "aws_instance" "instancia_toomate_privada" {
   user_data = <<-EOF
 #!/bin/bash
 cd /home/ubuntu
-docker compose up -d
+docker run -d --name backend -p 8080:8080 \
+  -e DATABASE_HOST=${aws_instance.instancia_database_privada.private_ip} \
+  -e DATABASE_PORT=3306 \
+  -e DATABASE_USER=toomate_user \
+  -e DATABASE_PASSWORD=toomate_password \
+  lucaspaessptech/toomate:backend
 EOF
 
   tags = {
