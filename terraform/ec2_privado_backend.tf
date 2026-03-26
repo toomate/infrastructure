@@ -20,38 +20,14 @@ resource "aws_instance" "instancia_toomate_privada" {
 
   user_data = <<-EOF
 #!/bin/bash
-set -euxo pipefail
-exec > >(tee -a /var/log/user-data-backend.log) 2>&1
-
-cd /home/ubuntu
-
-if ! command -v docker >/dev/null 2>&1; then
-  apt-get update -y
-  apt-get install -y ca-certificates curl gnupg lsb-release
-  install -m 0755 -d /etc/apt/keyrings
-  curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-  chmod a+r /etc/apt/keyrings/docker.gpg
-  echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
-$(lsb_release -cs) stable" > /etc/apt/sources.list.d/docker.list
-  apt-get update -y
-  apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-fi
+set -e
 
 systemctl enable docker
 systemctl start docker
 
-DB_READY=0
-for i in $(seq 1 60); do
-  if timeout 2 bash -c "cat < /dev/null > /dev/tcp/${aws_instance.instancia_database_privada.private_ip}/3306"; then
-    DB_READY=1
-    break
-  fi
+until timeout 2 bash -c "cat < /dev/null > /dev/tcp/${aws_instance.instancia_database_privada.private_ip}/3306"; do
   sleep 5
 done
-
-if [ "$DB_READY" -ne 1 ]; then
-  echo "Banco de dados indisponivel apos 5 minutos: ${aws_instance.instancia_database_privada.private_ip}:3306"
-fi
 
 docker rm -f backend || true
 docker run -d --name backend -p 8080:8080 \
@@ -61,7 +37,7 @@ docker run -d --name backend -p 8080:8080 \
   -e SPRING_DATASOURCE_PASSWORD=toomate_password \
   lucaspaessptech/toomate:backend
 
-# Aguarda o backend estar 100% inicializado e cadastra usuario padrao apenas na instancia 0.
+# Cadastra usuario padrao apenas na instancia 0.
 if [ "${count.index}" -eq 0 ]; then
   until curl -fsS http://localhost:8080/v3/api-docs > /dev/null; do
     sleep 5

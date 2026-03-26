@@ -9,8 +9,7 @@ resource "aws_instance" "builder_toomate" {
 
   user_data = <<-EOF
 #!/bin/bash
-set -euxo pipefail
-exec > >(tee -a /var/log/user-data-builder.log) 2>&1
+set -e
 
 apt-get update -y
 apt-get install -y ca-certificates curl gnupg lsb-release
@@ -28,27 +27,9 @@ apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin do
 systemctl enable docker
 systemctl start docker
 
-for i in $(seq 1 30); do
-  if docker info >/dev/null 2>&1; then
-    break
-  fi
-  sleep 2
-done
-
-for image in lucaspaessptech/toomate:database lucaspaessptech/toomate:backend lucaspaessptech/toomate:frontend; do
-  for i in $(seq 1 12); do
-    if docker pull "$image"; then
-      break
-    fi
-    if [ "$i" -eq 12 ]; then
-      echo "Falha no pull da imagem $image"
-      exit 1
-    fi
-    sleep 10
-  done
-done
-
-docker image ls
+docker pull lucaspaessptech/toomate:database
+docker pull lucaspaessptech/toomate:backend
+docker pull lucaspaessptech/toomate:frontend
 
 touch /home/ubuntu/BUILD_COMPLETE
 EOF
