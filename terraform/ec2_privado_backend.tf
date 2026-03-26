@@ -26,6 +26,22 @@ docker run -d --name backend -p 8080:8080 \
   -e DATABASE_USER=toomate_user \
   -e DATABASE_PASSWORD=toomate_password \
   lucaspaessptech/toomate:backend
+
+# Aguarda o backend estar 100% inicializado e cadastra usuario padrao apenas na instancia 0.
+if [ "${count.index}" -eq 0 ]; then
+  until curl -s http://localhost:8080/actuator/health | grep -q '"status":"UP"'; do
+    sleep 5
+  done
+
+  HTTP_CODE=$(curl -s -o /tmp/bootstrap_usuario_response.txt -w "%{http_code}" \
+    -X POST http://localhost:8080/usuarios \
+    -H "Content-Type: application/json" \
+    -d '{"nome":"Toomate Dev","apelido":"toomatedev","senha":"toomatesenha","administrador":true}')
+
+  if [ "$HTTP_CODE" != "201" ] && [ "$HTTP_CODE" != "409" ]; then
+    cat /tmp/bootstrap_usuario_response.txt >> /var/log/bootstrap_usuario.log
+  fi
+fi
 EOF
 
   tags = {
