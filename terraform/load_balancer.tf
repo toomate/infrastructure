@@ -15,16 +15,16 @@ resource "aws_lb_target_group" "tg_toomate" {
   port        = 8080
   protocol    = "HTTP"
   vpc_id      = aws_vpc.vpc_toomate.id
-  target_type = "ip"
+  target_type = "instance"
 
   health_check {
-    path                = "/"
+    path                = "/actuator/health"
     port                = "traffic-port"
     protocol            = "HTTP"
-    matcher             = "200-499"
-    interval            = 30
-    timeout             = 5
-    healthy_threshold   = 2
+    matcher             = "200"
+    interval            = 40
+    timeout             = 10
+    healthy_threshold   = 3
     unhealthy_threshold = 2
   }
 }
@@ -32,7 +32,7 @@ resource "aws_lb_target_group" "tg_toomate" {
 resource "aws_lb_target_group_attachment" "tg_attachment" {
   count            = 2
   target_group_arn = aws_lb_target_group.tg_toomate.arn
-  target_id = aws_instance.instancia_toomate_privada[count.index].private_ip
+  target_id        = aws_instance.instancia_toomate_privada[count.index].id
   port             = 8080
 }
 

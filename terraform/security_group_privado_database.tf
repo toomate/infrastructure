@@ -1,6 +1,6 @@
 resource "aws_security_group" "sg_privado_database" {
   name        = "sg_privado_database"
-  description = "Security group para instância privada de banco de dados"
+  description = "Security group privado debanco de dados"
   vpc_id      = aws_vpc.vpc_toomate.id
 
   # SSH apenas da subnet privada

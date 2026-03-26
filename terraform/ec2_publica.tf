@@ -21,3 +21,9 @@ resource "aws_instance" "instancia_toomate_publica" {
 docker run -e API_URL=http://${aws_lb.alb_toomate.dns_name} --name frontend -p 80:80 -d lucaspaessptech/toomate:frontend
 EOF
 }
+
+output "site_public_ip" {
+  description = "IP público da instância pública"
+  value       = aws_instance.instancia_toomate_publica.public_ip
+}
+

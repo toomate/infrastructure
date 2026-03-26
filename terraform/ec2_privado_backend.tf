@@ -33,7 +33,7 @@ if [ "${count.index}" -eq 0 ]; then
     sleep 5
   done
 
-  HTTP_CODE=$(curl -s -o /tmp/bootstrap_usuario_response.txt -w "%{http_code}" \
+  HTTP_CODE=$(curl -s -o /tmp/bootstrap_usuario_response.txt -w "%%{http_code}" \
     -X POST http://localhost:8080/usuarios \
     -H "Content-Type: application/json" \
     -d '{"nome":"Toomate Dev","apelido":"toomatedev","senha":"toomatesenha","administrador":true}')
