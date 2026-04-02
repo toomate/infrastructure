@@ -18,7 +18,12 @@ resource "aws_instance" "instancia_toomate_publica" {
 
   user_data = <<-EOF
 #!/bin/bash
-docker run -e API_URL=http://${aws_lb.alb_toomate.dns_name} --name frontend -p 80:80 -d lucaspaessptech/toomate:frontend
+set -e
+mkdir -p /etc/toomate
+cat >/etc/toomate/frontend.env <<EOT
+API_URL=http://${aws_lb.alb_toomate.dns_name}
+EOT
+docker run --env-file /etc/toomate/frontend.env --name frontend -p 80:80 -d lucaspaessptech/toomate:frontend
 EOF
 }
 
