@@ -1,15 +1,15 @@
-# ---------------------------------------------------------------------------
-# Empacotamento automático do código Python
-# ---------------------------------------------------------------------------
 data "archive_file" "lambda_zip" {
   type        = "zip"
   source_dir  = "../lambda"
   output_path = ".terraform/relatorio_vencimentos.zip"
 }
 
-# ---------------------------------------------------------------------------
-# Security group da Lambda
-# ---------------------------------------------------------------------------
+data "archive_file" "lambda_zip_tratamento" {
+  type        = "zip"
+  source_dir  = "../lambda"
+  output_path = ".terraform/tratamento_csv.zip"
+}
+
 resource "aws_security_group" "sg_lambda" {
   name        = "sg_lambda_relatorio"
   description = "Security group da Lambda de relatorio de vencimentos"
@@ -27,9 +27,6 @@ resource "aws_security_group" "sg_lambda" {
   }
 }
 
-# ---------------------------------------------------------------------------
-# IAM — usa o LabRole existente do ambiente de lab
-# ---------------------------------------------------------------------------
 data "aws_iam_role" "lab_role" {
   name = "LabRole"
 }
@@ -60,15 +57,12 @@ resource "aws_lambda_function" "relatorio_vencimentos" {
       DB_NAME     = var.db_name
       DB_USER     = var.db_user
       DB_PASSWORD = var.db_password
-      S3_BUCKET   = aws_s3_bucket.toomate["raw"].bucket
+      S3_BUCKET   = aws_s3_bucket.toomate["refined"].bucket
       S3_PREFIX   = var.s3_prefix
     }
   }
 }
 
-# ---------------------------------------------------------------------------
-# EventBridge — agendamento diário
-# ---------------------------------------------------------------------------
 resource "aws_cloudwatch_event_rule" "diario" {
   name                = "toomate-relatorio-vencimentos-diario"
   description         = "Dispara a Lambda de relatório de vencimentos todo dia às 06h BRT"
@@ -87,4 +81,46 @@ resource "aws_lambda_permission" "eventbridge" {
   function_name = aws_lambda_function.relatorio_vencimentos.function_name
   principal     = "events.amazonaws.com"
   source_arn    = aws_cloudwatch_event_rule.diario.arn
+}
+
+resource "aws_lambda_function" "tratamento_csv" {
+  function_name    = "toomate-tratamento-csv"
+  role             = data.aws_iam_role.lab_role.arn
+  filename         = data.archive_file.lambda_zip_tratamento.output_path
+  source_code_hash = data.archive_file.lambda_zip_tratamento.output_base64sha256
+
+  runtime     = "python3.12"
+  handler     = "tratamento_csv.lambda_handler"
+  timeout     = 120
+  memory_size = 256
+
+  environment {
+    variables = {
+      DESTINO_BUCKET = aws_s3_bucket.toomate["trusted"].bucket
+    }
+  }
+
+  tags = {
+    Name = "toomate-tratamento-csv"
+  }
+}
+
+resource "aws_lambda_permission" "s3_raw" {
+  statement_id  = "AllowS3RawInvoke"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.tratamento_csv.function_name
+  principal     = "s3.amazonaws.com"
+  source_arn    = aws_s3_bucket.toomate["raw"].arn
+}
+
+resource "aws_s3_bucket_notification" "raw_csv_trigger" {
+  bucket = aws_s3_bucket.toomate["raw"].id
+
+  lambda_function {
+    lambda_function_arn = aws_lambda_function.tratamento_csv.arn
+    events              = ["s3:ObjectCreated:*"]
+    filter_suffix       = ".csv"
+  }
+
+  depends_on = [aws_lambda_permission.s3_raw]
 }
