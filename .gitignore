@@ -21,4 +21,3 @@ crash.*.log
 .terraform.lock.*
 
 terraform/labsuser.pem
-compose.yaml

@@ -1,0 +1,101 @@
+version: '3.8'
+
+services:
+
+  mysql:
+    image: lucaspaessptech/toomate:database
+    command: --lower_case_table_names=1
+    container_name: toomate_mysql
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: toomate
+    restart: always
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    image: lucaspaessptech/toomate:backend
+    container_name: toomate_backend
+    depends_on:
+      mysql:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/toomate
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+    restart: always
+
+  waha:
+    image: devlikeapro/waha:latest
+    container_name: toomate_waha
+
+    env_file:
+      - ../frontend/.env
+
+    environment:
+      # Define qual é a sessão "default"
+      WHATSAPP_DEFAULT_SESSION: default
+
+      # Inicia automaticamente a sessão default ao subir
+      WHATSAPP_START_SESSION: default
+
+      # Opcional: em caso de restart, tenta subir tudo de novo
+      WHATSAPP_RESTART_ALL_SESSIONS: "True"
+
+      WAHA_LOG_FORMAT: JSON
+      WAHA_LOG_LEVEL: info
+      TZ: America/Sao_Paulo
+
+    ports:
+      - "3000:3000"
+
+    volumes:
+      - waha_sessions:/app/.sessions
+      - waha_media:/app/.media
+
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+    restart: unless-stopped
+
+    # Recursos (ajuste conforme necessidade da instância)
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '1'
+          memory: 1G
+
+    # Logs
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "10"
+
+volumes:
+  mysql_data:
+  waha_sessions:
+    driver: local
+  waha_media:
+    driver: local
+
+networks:
+  default:
+    name: toomate_network
+    driver: bridge

@@ -23,6 +23,8 @@ mkdir -p /etc/toomate
 cat >/etc/toomate/frontend.env <<EOT
 API_URL=http://${aws_lb.alb_toomate.dns_name}
 EOT
+docker pull devlikeapro/waha
+docker run --rm -v /etc/toomate:/app/env devlikeapro/waha init-waha /app/env
 docker run --env-file /etc/toomate/frontend.env --name frontend -p 80:80 -d lucaspaessptech/toomate:frontend
 EOF
 }
