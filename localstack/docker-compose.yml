@@ -1,0 +1,12 @@
+version: "3.8"
+
+services:
+  localstack:
+    image: localstack/localstack
+    ports:
+      - "4566:4566"
+    environment:
+      - SERVICES=ec2,s3,elbv2
+      - DEFAULT_REGION=us-east-1
+    volumes:
+      - ./init:/etc/localstack/init/ready.d

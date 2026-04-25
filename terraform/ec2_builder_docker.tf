@@ -5,9 +5,12 @@ resource "aws_instance" "builder_toomate" {
   vpc_security_group_ids      = [aws_security_group.sg_publico_tag.id]
   associate_public_ip_address = true
   key_name                    = "vockey"
+  user_data_replace_on_change = true
 
   user_data = <<-EOF
 #!/bin/bash
+set -e
+
 apt-get update -y
 apt-get install -y ca-certificates curl gnupg lsb-release
 
@@ -21,50 +24,12 @@ $(lsb_release -cs) stable" > /etc/apt/sources.list.d/docker.list
 apt-get update -y
 apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
+systemctl enable docker
+systemctl start docker
+
 docker pull lucaspaessptech/toomate:database
 docker pull lucaspaessptech/toomate:backend
 docker pull lucaspaessptech/toomate:frontend
-
-cat <<EOT > /home/ubuntu/compose.yaml
-version: '3.8'
-
-services:
-
-  mysql:
-    image: lucaspaessptech/toomate:database
-    command: --lower_case_table_names=1
-    container_name: toomate_mysql
-    ports:
-      - "3306:3306"
-    volumes:
-      - mysql_data:/var/lib/mysql
-    environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: toomate
-    restart: always
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
-
-  backend:
-    image: lucaspaessptech/toomate:backend
-    container_name: toomate_backend
-    depends_on:
-      mysql:
-        condition: service_healthy
-    ports:
-      - "8080:8080"
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/toomate
-      SPRING_DATASOURCE_USERNAME: root
-      SPRING_DATASOURCE_PASSWORD: root
-    restart: always
-
-volumes:
-  mysql_data:
-EOT
 
 touch /home/ubuntu/BUILD_COMPLETE
 EOF

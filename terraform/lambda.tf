@@ -55,8 +55,8 @@ resource "aws_lambda_function" "relatorio_vencimentos" {
 
   environment {
     variables = {
-      DB_HOST     = aws_instance.instancia_toomate_privada[0].private_ip
-      DB_PORT     = tostring(var.db_port)
+      DB_HOST     = aws_instance.instancia_database_privada.private_ip
+      DB_PORT     = tostring(var.database_porta)
       DB_NAME     = var.db_name
       DB_USER     = var.db_user
       DB_PASSWORD = var.db_password

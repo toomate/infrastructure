@@ -28,17 +28,16 @@ variable "react_porta" {
   default     = 80
 }
 
+variable "database_porta" {
+  description = "Porta para banco de dados MySQL"
+  type        = number
+  default     = 3306
+}
+
 variable "s3_prefix" {
   description = "Prefixo das chaves no bucket de relatórios"
   type        = string
   default     = "vencimentos"
-}
-
-
-variable "db_port" {
-  description = "Porta do banco de dados"
-  type        = number
-  default     = 3306
 }
 
 variable "db_name" {
@@ -50,14 +49,14 @@ variable "db_name" {
 variable "db_user" {
   description = "Usuário do banco de dados"
   type        = string
-  default     = "root"
+  default     = "toomate_user"
 }
 
 variable "db_password" {
   description = "Senha do banco de dados"
   type        = string
   sensitive   = true
-  default     = "root"
+  default     = "toomate_password"
 }
 
 variable "schedule_expression" {

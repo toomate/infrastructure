@@ -1,6 +1,6 @@
 resource "aws_security_group" "sg_privado_tag" {
   name        = "sg_privado"
-  description = "Security group privado"
+  description = "Security group privado backend"
   vpc_id      = aws_vpc.vpc_toomate.id
 
 
