@@ -5,14 +5,6 @@ resource "aws_security_group" "sg_privado_tag" {
 
 
   ingress {
-    description     = "Permitir acesso MySQL da Lambda"
-    from_port       = 3306
-    to_port         = 3306
-    protocol        = "tcp"
-    security_groups = [aws_security_group.sg_lambda.id]
-  }
-
-  ingress {
     description     = "Permitir entrade ssh de todos os ips"
     from_port       = var.porta_ssh
     to_port         = var.porta_ssh
