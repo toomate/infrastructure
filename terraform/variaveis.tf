@@ -64,3 +64,9 @@ variable "schedule_expression" {
   type        = string
   default     = "cron(0 9 * * ? *)"
 }
+
+variable "waha_porta" {
+  description = "Porta para aplicação Waha"
+  type        = number
+  default     = 3000
+}

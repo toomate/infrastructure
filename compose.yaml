@@ -71,16 +71,6 @@ services:
 
     restart: unless-stopped
 
-    # Recursos (ajuste conforme necessidade da instância)
-    deploy:
-      resources:
-        limits:
-          cpus: '2'
-          memory: 2G
-        reservations:
-          cpus: '1'
-          memory: 1G
-
     # Logs
     logging:
       driver: "json-file"

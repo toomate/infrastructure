@@ -20,4 +20,4 @@ crash.*.log
 # Aquivos de lock
 .terraform.lock.*
 
-terraform/labsuser.pem
+terraform/vockey.pem

@@ -21,6 +21,15 @@ resource "aws_security_group" "sg_publico_tag" {
     ipv6_cidr_blocks = var.ipv6_qualquer
   }
 
+    ingress {
+    description      = "Permitir entrada waha de todos os ips"
+    from_port        = var.waha_porta
+    to_port          = var.waha_porta
+    protocol         = "tcp"
+    cidr_blocks      = var.ip_qualquer
+    ipv6_cidr_blocks = var.ipv6_qualquer
+  }
+
   egress {
     from_port        = 0
     to_port          = 0

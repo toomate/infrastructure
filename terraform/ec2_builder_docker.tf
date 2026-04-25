@@ -31,6 +31,8 @@ docker pull lucaspaessptech/toomate:database
 docker pull lucaspaessptech/toomate:backend
 docker pull lucaspaessptech/toomate:frontend
 
+sudo apt install uuid-runtime -y
+
 touch /home/ubuntu/BUILD_COMPLETE
 EOF
 
@@ -38,7 +40,7 @@ EOF
     type        = "ssh"
     host        = self.public_ip
     user        = "ubuntu"
-    private_key = file("labsuser.pem")
+    private_key = file("vockey.pem")
   }
 
   tags = {
@@ -55,7 +57,7 @@ resource "terraform_data" "wait_for_build" {
       type        = "ssh"
       host        = aws_instance.builder_toomate.public_ip
       user        = "ubuntu"
-      private_key = file("labsuser.pem")
+      private_key = file("vockey.pem")
     }
 
     inline = [
