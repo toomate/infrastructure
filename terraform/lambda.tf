@@ -1,0 +1,90 @@
+# ---------------------------------------------------------------------------
+# Empacotamento automático do código Python
+# ---------------------------------------------------------------------------
+data "archive_file" "lambda_zip" {
+  type        = "zip"
+  source_dir  = "../lambda"
+  output_path = ".terraform/relatorio_vencimentos.zip"
+}
+
+# ---------------------------------------------------------------------------
+# Security group da Lambda
+# ---------------------------------------------------------------------------
+resource "aws_security_group" "sg_lambda" {
+  name        = "sg_lambda_relatorio"
+  description = "Security group da Lambda de relatorio de vencimentos"
+  vpc_id      = aws_vpc.vpc_toomate.id
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "sg_lambda_relatorio"
+  }
+}
+
+# ---------------------------------------------------------------------------
+# IAM — usa o LabRole existente do ambiente de lab
+# ---------------------------------------------------------------------------
+data "aws_iam_role" "lab_role" {
+  name = "LabRole"
+}
+
+# ---------------------------------------------------------------------------
+# Lambda
+# ---------------------------------------------------------------------------
+resource "aws_lambda_function" "relatorio_vencimentos" {
+  function_name    = "toomate-relatorio-vencimentos"
+  role             = data.aws_iam_role.lab_role.arn
+  filename         = data.archive_file.lambda_zip.output_path
+  source_code_hash = data.archive_file.lambda_zip.output_base64sha256
+
+  runtime     = "python3.12"
+  handler     = "relatorio_vencimentos.lambda_handler"
+  timeout     = 60
+  memory_size = 256
+
+  vpc_config {
+    subnet_ids         = [aws_subnet.subnet_toomate_privado.id, aws_subnet.subnet_toomate_privado_2.id]
+    security_group_ids = [aws_security_group.sg_lambda.id]
+  }
+
+  environment {
+    variables = {
+      DB_HOST     = aws_instance.instancia_toomate_privada[0].private_ip
+      DB_PORT     = tostring(var.db_port)
+      DB_NAME     = var.db_name
+      DB_USER     = var.db_user
+      DB_PASSWORD = var.db_password
+      S3_BUCKET   = aws_s3_bucket.toomate["raw"].bucket
+      S3_PREFIX   = var.s3_prefix
+    }
+  }
+}
+
+# ---------------------------------------------------------------------------
+# EventBridge — agendamento diário
+# ---------------------------------------------------------------------------
+resource "aws_cloudwatch_event_rule" "diario" {
+  name                = "toomate-relatorio-vencimentos-diario"
+  description         = "Dispara a Lambda de relatório de vencimentos todo dia às 06h BRT"
+  schedule_expression = var.schedule_expression
+}
+
+resource "aws_cloudwatch_event_target" "lambda" {
+  rule      = aws_cloudwatch_event_rule.diario.name
+  target_id = "relatorio-vencimentos"
+  arn       = aws_lambda_function.relatorio_vencimentos.arn
+}
+
+resource "aws_lambda_permission" "eventbridge" {
+  statement_id  = "AllowEventBridgeInvoke"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.relatorio_vencimentos.function_name
+  principal     = "events.amazonaws.com"
+  source_arn    = aws_cloudwatch_event_rule.diario.arn
+}

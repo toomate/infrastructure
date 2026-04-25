@@ -58,5 +58,30 @@ resource "aws_internet_gateway" "igw_toomate" {
   tags = {
     Name = "igw_toomate"
   }
+}
 
+resource "aws_eip" "nat" {
+  domain = "vpc"
+}
+
+resource "aws_nat_gateway" "nat" {
+  allocation_id = aws_eip.nat.id
+  subnet_id     = aws_subnet.subnet_toomate_publico.id
+
+  depends_on = [aws_internet_gateway.igw_toomate]
+
+  tags = {
+    Name = "nat-toomate"
+  }
+}
+
+resource "aws_vpc_endpoint" "s3" {
+  vpc_id            = aws_vpc.vpc_toomate.id
+  service_name      = "com.amazonaws.us-east-1.s3"
+  vpc_endpoint_type = "Gateway"
+  route_table_ids   = [aws_route_table.rt_toomate_privado.id]
+
+  tags = {
+    Name = "toomate-s3-endpoint"
+  }
 }

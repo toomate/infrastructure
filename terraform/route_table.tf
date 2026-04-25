@@ -1,4 +1,27 @@
 
+resource "aws_route_table" "rt_toomate_privado" {
+  vpc_id = aws_vpc.vpc_toomate.id
+
+  route {
+    cidr_block     = "0.0.0.0/0"
+    nat_gateway_id = aws_nat_gateway.nat.id
+  }
+
+  tags = {
+    Name = "rt_toomate_privado"
+  }
+}
+
+resource "aws_route_table_association" "privado_assoc_1" {
+  subnet_id      = aws_subnet.subnet_toomate_privado.id
+  route_table_id = aws_route_table.rt_toomate_privado.id
+}
+
+resource "aws_route_table_association" "privado_assoc_2" {
+  subnet_id      = aws_subnet.subnet_toomate_privado_2.id
+  route_table_id = aws_route_table.rt_toomate_privado.id
+}
+
 resource "aws_route_table" "rt_toomate_publico" {
   vpc_id = aws_vpc.vpc_toomate.id
 
