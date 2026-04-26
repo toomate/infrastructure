@@ -30,6 +30,8 @@ systemctl start docker
 docker pull lucaspaessptech/toomate:database
 docker pull lucaspaessptech/toomate:backend
 docker pull lucaspaessptech/toomate:frontend
+docker pull lucaspaessptech/toomate:microservice
+docker pull rabbitmq:4.2.4-management
 
 sudo apt install uuid-runtime -y
 
