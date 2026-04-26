@@ -89,9 +89,6 @@ services:
 
   microservico-notif:
     image: lucaspaessptech/toomate:microservice
-    build:
-    context: .
-    dockerfile: microservico-notif/Dockerfile
     environment:
       - SPRING_RABBITMQ_HOST=rabbitmq
       - SPRING_RABBITMQ_PORT=5672
