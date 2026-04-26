@@ -78,6 +78,30 @@ services:
         max-size: "100m"
         max-file: "10"
 
+  rabbitmq:
+    image: 'rabbitmq:4.2.4-management'
+    environment:
+      - 'RABBITMQ_DEFAULT_PASS=secret'
+      - 'RABBITMQ_DEFAULT_USER=myuser'
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+  microservico-notif:
+    image: lucaspaessptech/toomate:microservice
+    build:
+    context: .
+    dockerfile: microservico-notif/Dockerfile
+    environment:
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_RABBITMQ_PORT=5672
+      - SPRING_RABBITMQ_USERNAME=myuser
+      - SPRING_RABBITMQ_PASSWORD=secret
+    ports:
+      - "8182:8182"
+    depends_on:
+      - rabbitmq
+
 volumes:
   mysql_data:
   waha_sessions:
