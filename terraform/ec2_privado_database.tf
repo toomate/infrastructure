@@ -14,21 +14,8 @@ resource "aws_instance" "instancia_database_privada" {
     delete_on_termination = true
   }
 
-  # Volume adicional para dados do banco
-  ebs_block_device {
-    device_name           = "/dev/sdf"
-    volume_size           = 50
-    volume_type           = "gp3"
-    delete_on_termination = true
-    encrypted             = false
-  }
-
   user_data = <<-EOF
 #!/bin/bash
-# Montar volume adicional para dados do banco
-mkdir -p /var/lib/mysql
-mkfs.ext4 /dev/nvme1n1
-mount /dev/nvme1n1 /var/lib/mysql
 
 # Executar container MySQL
 cd /home/ubuntu
@@ -40,7 +27,9 @@ docker run -d \
   -e MYSQL_DATABASE=toomate \
   -e MYSQL_USER=toomate_user \
   -e MYSQL_PASSWORD=toomate_password \
-  lucaspaessptech/toomate:database
+  lucaspaessptech/toomate:database \
+  --lower_case_table_names=1
+
 EOF
 
   tags = {
