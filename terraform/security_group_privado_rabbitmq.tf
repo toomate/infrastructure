@@ -1,6 +1,6 @@
 resource "aws_security_group" "rabbit_sg" {
   name        = "rabbit-sg"
-  vpc_id      = aws_vpc.toomate_vpc.id
+  vpc_id      = aws_vpc.vpc_toomate.id
   description = "RabbitMQ SG - only app and admin access"
 
   ingress {
@@ -8,7 +8,7 @@ resource "aws_security_group" "rabbit_sg" {
     from_port        = 5672
     to_port          = 5672
     protocol         = "tcp"
-    security_groups  = [aws_security_group.sg_privado_tag]
+    security_groups  = [aws_security_group.sg_privado_tag.id]
   }
 
   ingress {

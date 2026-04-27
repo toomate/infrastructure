@@ -11,6 +11,8 @@ resource "aws_s3_bucket" "toomate" {
 
   bucket = each.value
 
+  force_destroy = true
+
   tags = {
     Name        = each.key
     Environment = "Dev"
