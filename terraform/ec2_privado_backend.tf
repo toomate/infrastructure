@@ -1,6 +1,6 @@
 resource "aws_instance" "instancia_toomate_privada" {
   count         = 2
-  ami           = aws_ami_from_instance.ami_toomate.id
+  ami           = "ami-0b6c6ebed2801a5cb"
   instance_type = "t2.medium"
   key_name      = "vockey"
   user_data_replace_on_change = true
@@ -22,8 +22,27 @@ resource "aws_instance" "instancia_toomate_privada" {
 #!/bin/bash
 set -e
 
+# Instalar Docker
+apt-get update -y
+apt-get install -y ca-certificates curl gnupg lsb-release
+
+install -m 0755 -d /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+chmod a+r /etc/apt/keyrings/docker.gpg
+
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+$(lsb_release -cs) stable" > /etc/apt/sources.list.d/docker.list
+
+apt-get update -y
+apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
 systemctl enable docker
 systemctl start docker
+
+# Pull das imagens Docker
+docker pull lucaspaessptech/toomate:backend
+docker pull lucaspaessptech/toomate:frontend
+docker pull rabbitmq:4.2.4-management
 
 until timeout 2 bash -c "cat < /dev/null > /dev/tcp/${aws_instance.instancia_database_privada.private_ip}/3306"; do
   sleep 5
@@ -36,22 +55,6 @@ docker run -d --name backend -p 8080:8080 \
   -e SPRING_DATASOURCE_USERNAME=toomate_user \
   -e SPRING_DATASOURCE_PASSWORD=toomate_password \
   lucaspaessptech/toomate:backend
-
-# Cadastra usuario padrao apenas na instancia 0.
-if [ "${count.index}" -eq 0 ]; then
-  until curl -fsS http://localhost:8080/v3/api-docs > /dev/null; do
-    sleep 5
-  done
-
-  HTTP_CODE=$(curl -s -o /tmp/bootstrap_usuario_response.txt -w "%%{http_code}" \
-    -X POST http://localhost:8080/usuarios \
-    -H "Content-Type: application/json" \
-    -d '{"nome":"Toomate Dev","apelido":"toomatedev","senha":"toomatesenha","administrador":true}')
-
-  if [ "$HTTP_CODE" != "201" ] && [ "$HTTP_CODE" != "409" ]; then
-    cat /tmp/bootstrap_usuario_response.txt >> /var/log/bootstrap_usuario.log
-  fi
-fi
 EOF
 
   tags = {

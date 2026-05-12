@@ -1,5 +1,5 @@
 resource "aws_instance" "instancia_toomate_publica" {
-  ami           = aws_ami_from_instance.ami_toomate.id
+  ami           = "ami-0b6c6ebed2801a5cb"
   instance_type = "t2.medium"
   key_name      = "vockey"
 
@@ -19,6 +19,26 @@ resource "aws_instance" "instancia_toomate_publica" {
   user_data = <<-EOF
 #!/bin/bash
 set -e
+
+# Instalar Docker
+apt-get update -y
+apt-get install -y ca-certificates curl gnupg lsb-release
+
+install -m 0755 -d /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+chmod a+r /etc/apt/keyrings/docker.gpg
+
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+$(lsb_release -cs) stable" > /etc/apt/sources.list.d/docker.list
+
+apt-get update -y
+apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+systemctl enable docker
+systemctl start docker
+
+# Configuração da aplicação
+apt install uuid-runtime -y
 mkdir -p /etc/toomate
 KEY=$(cat /proc/sys/kernel/random/uuid 2>/dev/null || (command -v uuidgen >/dev/null 2>&1 && uuidgen) || python3 -c 'import uuid;print(uuid.uuid4())')
 
