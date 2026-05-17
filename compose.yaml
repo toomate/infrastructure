@@ -87,6 +87,10 @@ services:
     ports:
       - "5672:5672"
       - "15672:15672"
+      - "15692:15692"
+    command: >
+      bash -c "rabbitmq-plugins enable --offline rabbitmq_prometheus &&
+               docker-entrypoint.sh rabbitmq-server"
 
   microservico-notif:
     image: lucaspaessptech/toomate:microservice
@@ -100,12 +104,58 @@ services:
     depends_on:
       - rabbitmq
 
+  mysqld-exporter:
+    image: prom/mysqld-exporter:latest
+    container_name: toomate_mysqld_exporter
+    command:
+      - "--mysqld.username=root:root"
+      - "--mysqld.address=mysql:3306"
+      - "--no-collect.slave_status"
+    ports:
+      - "9104:9104"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    restart: always
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: toomate_prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    restart: always
+
+  grafana:
+    image: grafana/grafana-oss:latest
+    container_name: toomate_grafana
+    ports:
+      - "3001:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_INSTALL_PLUGINS: grafana-athena-datasource
+      AWS_SDK_LOAD_CONFIG: "true"
+      AWS_PROFILE: default
+      AWS_DEFAULT_REGION: us-east-1
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ${USERPROFILE}/.aws:/home/grafana/.aws:ro
+    depends_on:
+      - prometheus
+    restart: always
+
 volumes:
   mysql_data:
   waha_sessions:
     driver: local
   waha_media:
     driver: local
+  prometheus_data:
+  grafana_data:
 
 networks:
   default:

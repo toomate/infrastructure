@@ -21,3 +21,8 @@ crash.*.log
 .terraform.lock.*
 
 terraform/vockey.pem
+terraform/labsuser.pem
+
+#claudião
+.claude/settings.local.json
+.claude/settings.json

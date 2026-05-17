@@ -1,0 +1,24 @@
+apiVersion: 1
+
+providers:
+  - name: 'toomate-infra'
+    orgId: 1
+    folder: 'Infra'
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    allowUiUpdates: true
+    options:
+      path: /etc/grafana/provisioning/dashboards/infra
+      foldersFromFilesStructure: false
+
+  - name: 'toomate-cliente'
+    orgId: 1
+    folder: 'Visao Cliente'
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    allowUiUpdates: true
+    options:
+      path: /etc/grafana/provisioning/dashboards/cliente
+      foldersFromFilesStructure: false

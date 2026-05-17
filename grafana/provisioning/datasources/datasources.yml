@@ -1,0 +1,23 @@
+apiVersion: 1
+
+datasources:
+  - name: Prometheus
+    type: prometheus
+    uid: prometheus
+    access: proxy
+    url: http://prometheus:9090
+    isDefault: true
+    editable: true
+
+  - name: Athena
+    type: grafana-athena-datasource
+    uid: athena
+    jsonData:
+      authType: credentials
+      profile: default
+      defaultRegion: us-east-1
+      catalog: AwsDataCatalog
+      database: toomate
+      workgroup: toomate
+      outputLocation: s3://toomate-athena-results-2026/
+    editable: true
