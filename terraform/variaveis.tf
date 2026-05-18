@@ -70,3 +70,28 @@ variable "waha_porta" {
   type        = number
   default     = 3000
 }
+
+variable "admin_email" {
+  description = "Email do administrador que recebe notificações de backup"
+  type        = string
+  default     = "joao.santos006@sptech.school"
+}
+
+variable "backup_cron_schedule" {
+  description = "Expressão cron Linux (UTC) para o backup diário do banco. Default 21:40 UTC = 18:40 BRT"
+  type        = string
+  default     = "40 21 * * *"
+}
+
+variable "backup_retention_days" {
+  description = "Dias de retenção dos backups no bucket S3 antes do lifecycle apagá-los"
+  type        = number
+  default     = 30
+}
+
+variable "db_root_password" {
+  description = "Senha root do MySQL (usada pelo mysqldump no script de backup)"
+  type        = string
+  sensitive   = true
+  default     = "toomate_root_password"
+}

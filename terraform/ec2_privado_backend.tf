@@ -1,8 +1,8 @@
 resource "aws_instance" "instancia_toomate_privada" {
-  count         = 2
-  ami           = "ami-0b6c6ebed2801a5cb"
-  instance_type = "t2.medium"
-  key_name      = "vockey"
+  count                       = 2
+  ami                         = "ami-0b6c6ebed2801a5cb"
+  instance_type               = "t2.medium"
+  key_name                    = "vockey"
   user_data_replace_on_change = true
 
   subnet_id = element([

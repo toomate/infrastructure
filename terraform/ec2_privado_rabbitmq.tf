@@ -1,10 +1,10 @@
 resource "aws_instance" "rabbit" {
-  ami                         = "ami-0b6c6ebed2801a5cb"
-  instance_type               = "t3.medium"
-  subnet_id                   = aws_subnet.subnet_toomate_privado.id
-  key_name                    = "vockey"
-  vpc_security_group_ids      = [aws_security_group.rabbit_sg.id]
-  tags = { Name = "rabbitmq-single" }
+  ami                    = "ami-0b6c6ebed2801a5cb"
+  instance_type          = "t3.medium"
+  subnet_id              = aws_subnet.subnet_toomate_privado.id
+  key_name               = "vockey"
+  vpc_security_group_ids = [aws_security_group.rabbit_sg.id]
+  tags                   = { Name = "rabbitmq-single" }
 
   root_block_device {
     volume_size           = 20
@@ -12,7 +12,7 @@ resource "aws_instance" "rabbit" {
     delete_on_termination = true
   }
 
-   user_data = <<-EOF
+  user_data = <<-EOF
 #!/bin/bash
 set -e
 

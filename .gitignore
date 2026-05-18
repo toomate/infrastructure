@@ -26,3 +26,6 @@ terraform/labsuser.pem
 #claudião
 .claude/settings.local.json
 .claude/settings.json
+# Chaves SSH (NUNCA committar)
+vockey.pem
+*.pem
