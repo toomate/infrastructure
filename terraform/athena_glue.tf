@@ -18,6 +18,10 @@ resource "aws_glue_crawler" "trusted" {
   database_name = aws_glue_catalog_database.toomate.name
   role          = data.aws_iam_role.lab_role.arn
 
+  # Roda diariamente às 03:00 BRT (06:00 UTC) para capturar schema drift
+  # e novas partições. Tabelas existentes detectam arquivos novos sem crawler.
+  schedule = "cron(0 6 * * ? *)"
+
   s3_target {
     path = "s3://${aws_s3_bucket.toomate["trusted"].bucket}/"
   }
@@ -39,6 +43,8 @@ resource "aws_glue_crawler" "refined" {
   name          = "toomate-refined-crawler"
   database_name = aws_glue_catalog_database.toomate.name
   role          = data.aws_iam_role.lab_role.arn
+
+  schedule = "cron(0 6 * * ? *)"
 
   s3_target {
     path = "s3://${aws_s3_bucket.toomate["refined"].bucket}/"

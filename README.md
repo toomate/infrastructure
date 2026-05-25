@@ -164,13 +164,31 @@ A Lambda `relatorio_vencimentos` é independente: roda diariamente (EventBridge)
 
 ### Adicionando um novo CSV
 
-Basta fazer upload no `raw`:
+Fluxo completo, do upload até a query no Athena:
 
 ```bash
+# 1. Sobe o CSV no bucket raw — dispara a Lambda automaticamente
 aws s3 cp meu_arquivo.csv s3://toomate-raw-2026/sinistros/
+
+# 2. (opcional) Acompanha o processamento da Lambda
+aws logs tail /aws/lambda/toomate-tratamento-csv --follow
+
+# 3. Confere o arquivo tratado no bucket trusted
+aws s3 ls s3://toomate-trusted-2026/sinistros/
+
+# 4. Roda o crawler do Glue pra atualizar o catálogo
+aws glue start-crawler --name toomate-trusted-crawler
+
+# 5. Acompanha o status do crawler
+aws glue get-crawler --name toomate-trusted-crawler --query "Crawler.State"
+
+# 6. Consulta no Athena (depois do crawler terminar)
+aws athena start-query-execution \
+  --query-string "SELECT * FROM toomate.sinistros LIMIT 10" \
+  --work-group toomate
 ```
 
-A Lambda dispara automaticamente, processa e salva `meu_arquivo_tratado.csv` no `trusted` na mesma pasta.
+> **Nota sobre o crawler:** os crawlers (`toomate-trusted-crawler` e `toomate-refined-crawler`) rodam **automaticamente uma vez por dia às 03:00 BRT**. Para o Athena, isso é suficiente — depois que a tabela existe no catálogo, novos arquivos na mesma pasta são lidos sem precisar re-rodar o crawler. A execução diária só é necessária para capturar **mudanças de schema** (coluna nova, tipo diferente) ou **novas partições** (pastas novas tipo `ano=2026/mes=01/`). O comando `aws glue start-crawler` da etapa 4 só é necessário se você quiser ver os dados antes do próximo run agendado.
 
 ---
 
