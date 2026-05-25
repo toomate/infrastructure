@@ -1,22 +1,14 @@
-import csv
 import io
 import os
 import re
 import unicodedata
 import urllib.parse
-from datetime import datetime
 
 import boto3
+import numpy as np
+import pandas as pd
 
 s3 = boto3.client("s3")
-
-DELIMITADOR_ENTRADA = ";"
-DELIMITADOR_SAIDA = ";"
-ENCODING_ENTRADA = "latin-1"
-
-COLUNAS_DECIMAL_BR = {"latitude", "longitude"}
-COLUNAS_INTEIRAS = {"numero_logradouro"}
-SENTINELAS_NULAS = {"NAO DISPONIVEL", "NAO INFORMADO", "N/A", "NA", "-"}
 
 
 def lambda_handler(event, context):
@@ -33,132 +25,77 @@ def lambda_handler(event, context):
 
     print(f"Lendo s3://{origem_bucket}/{origem_key}")
     resposta = s3.get_object(Bucket=origem_bucket, Key=origem_key)
-    conteudo_bruto = resposta["Body"].read().decode(ENCODING_ENTRADA)
 
-    linhas_entrada, linhas_saida, duplicatas = _tratar_csv(conteudo_bruto)
+    df = pd.read_csv(
+        io.BytesIO(resposta["Body"].read()),
+        sep=";",
+        encoding="latin-1",
+        dtype=str,
+    )
+    df.columns = [_normalizar_coluna(c) for c in df.columns]
+
+    df_clean = _tratar(df)
+
+    buffer = io.StringIO()
+    df_clean.to_csv(buffer, index=False, sep=";")
 
     s3.put_object(
         Bucket=destino_bucket,
         Key=destino_key,
-        Body=linhas_saida.encode("utf-8"),
+        Body=buffer.getvalue().encode("utf-8"),
         ContentType="text/csv; charset=utf-8",
         Metadata={
             "origem": origem_key,
-            "linhas_originais": str(linhas_entrada),
-            "duplicatas_removidas": str(duplicatas),
+            "linhas": str(len(df_clean)),
         },
     )
 
-    print(
-        f"CSV tratado salvo em s3://{destino_bucket}/{destino_key} | "
-        f"Linhas originais: {linhas_entrada} | Duplicatas removidas: {duplicatas}"
-    )
+    print(f"CSV tratado salvo em s3://{destino_bucket}/{destino_key} | Linhas: {len(df_clean)}")
 
     return {
         "statusCode": 200,
         "origem": f"s3://{origem_bucket}/{origem_key}",
         "destino": f"s3://{destino_bucket}/{destino_key}",
-        "linhas_originais": linhas_entrada,
-        "duplicatas_removidas": duplicatas,
-        "linhas_salvas": linhas_entrada - duplicatas,
+        "linhas": len(df_clean),
     }
 
 
-def _tratar_csv(conteudo: str) -> tuple[int, str, int]:
-    reader = csv.DictReader(io.StringIO(conteudo), delimiter=DELIMITADOR_ENTRADA)
+def _tratar(df: pd.DataFrame) -> pd.DataFrame:
+    df_clean = df.copy()
 
-    if not reader.fieldnames:
-        raise ValueError("CSV sem cabeçalho ou vazio")
+    cols_removidas = [c for c in df_clean.columns if df_clean[c].nunique() <= 1]
+    df_clean.drop(columns=cols_removidas, inplace=True)
+    print(f"Colunas removidas: {cols_removidas}")
 
-    colunas_normalizadas = [_normalizar_coluna(c) for c in reader.fieldnames]
-    linhas_entrada = 0
-    vistas: set[tuple] = set()
-    linhas_limpas: list[dict] = []
+    df_clean["data_sinistro"] = pd.to_datetime(df_clean["data_sinistro"], format="%d/%m/%Y")
 
-    for linha in reader:
-        valores_limpos = {
-            col_norm: _limpar_valor(col_norm, val)
-            for col_norm, val in zip(colunas_normalizadas, linha.values())
-        }
-
-        if all(v == "" for v in valores_limpos.values()):
-            continue
-
-        linhas_entrada += 1
-        chave = tuple(valores_limpos[c] for c in colunas_normalizadas)
-        if chave in vistas:
-            continue
-
-        vistas.add(chave)
-        linhas_limpas.append(valores_limpos)
-
-    duplicatas = linhas_entrada - len(linhas_limpas)
-
-    saida = io.StringIO()
-    writer = csv.DictWriter(
-        saida,
-        fieldnames=colunas_normalizadas,
-        delimiter=DELIMITADOR_SAIDA,
-        lineterminator="\n",
+    df_clean["latitude"] = (
+        df_clean["latitude"].replace("0,0", np.nan).str.replace(",", ".").astype(float)
     )
-    writer.writeheader()
-    writer.writerows(linhas_limpas)
+    df_clean["longitude"] = (
+        df_clean["longitude"].replace("0,0", np.nan).str.replace(",", ".").astype(float)
+    )
 
-    return linhas_entrada, saida.getvalue(), duplicatas
+    for col in ["hora_sinistro", "tipo_local", "logradouro"]:
+        df_clean[col] = df_clean[col].fillna("NAO DISPONIVEL")
+
+    qtd_cols = [c for c in df_clean.columns if c.startswith("qtd_")]
+    df_clean[qtd_cols] = df_clean[qtd_cols].fillna(0).astype(int)
+
+    tp_bin_cols = [
+        c for c in df_clean.columns
+        if c.startswith("tp_sinistro_") and c != "tp_sinistro_primario"
+    ]
+    for col in tp_bin_cols:
+        df_clean[col] = df_clean[col].apply(lambda x: 1 if x == "S" else 0).astype(int)
+
+    return df_clean
 
 
 def _normalizar_coluna(nome: str) -> str:
     sem_acento = unicodedata.normalize("NFKD", nome).encode("ascii", "ignore").decode("ascii")
     snake = re.sub(r"[^a-zA-Z0-9]+", "_", sem_acento.strip()).lower().strip("_")
     return snake or "coluna"
-
-
-def _limpar_valor(coluna: str, valor: str) -> str:
-    v = (valor or "").strip()
-    if not v:
-        return ""
-
-    sem_acento = unicodedata.normalize("NFKD", v).encode("ascii", "ignore").decode("ascii")
-    if sem_acento.upper() in SENTINELAS_NULAS:
-        return ""
-
-    if coluna in COLUNAS_DECIMAL_BR:
-        return _tratar_decimal(v)
-
-    if coluna in COLUNAS_INTEIRAS:
-        return _tratar_inteiro(v)
-
-    if coluna == "data_sinistro":
-        return _tratar_data(v)
-
-    return v
-
-
-def _tratar_decimal(valor: str) -> str:
-    normalizado = valor.replace(",", ".")
-    try:
-        numero = float(normalizado)
-    except ValueError:
-        return ""
-    if numero == 0.0:
-        return ""
-    return normalizado
-
-
-def _tratar_inteiro(valor: str) -> str:
-    try:
-        return str(int(float(valor.replace(",", "."))))
-    except ValueError:
-        return valor
-
-
-def _tratar_data(valor: str) -> str:
-    for formato in ("%d/%m/%Y", "%Y-%m-%d", "%d-%m-%Y"):
-        try:
-            return datetime.strptime(valor, formato).strftime("%Y-%m-%d")
-        except ValueError:
-            continue
-    return valor
 
 
 def _montar_destino_key(origem_key: str) -> str:

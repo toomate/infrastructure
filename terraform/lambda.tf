@@ -92,7 +92,11 @@ resource "aws_lambda_function" "tratamento_csv" {
   runtime     = "python3.12"
   handler     = "tratamento_csv.lambda_handler"
   timeout     = 120
-  memory_size = 256
+  memory_size = 512
+
+  layers = [
+    "arn:aws:lambda:us-east-1:336392948345:layer:AWSSDKPandas-Python312:27"
+  ]
 
   environment {
     variables = {
