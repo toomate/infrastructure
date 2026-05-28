@@ -4,7 +4,10 @@ services:
 
   mysql:
     image: lucaspaessptech/toomate:database
-    command: --lower_case_table_names=1
+    command:   
+    - --lower_case_table_names=1
+    - --character-set-server=utf8mb4
+    - --collation-server=utf8mb4_unicode_ci
     container_name: toomate_mysql
     ports:
       - "3306:3306"
