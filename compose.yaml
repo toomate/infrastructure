@@ -7,7 +7,6 @@ services:
     command:   
     - --lower_case_table_names=1
     - --character-set-server=utf8mb4
-    - --collation-server=utf8mb4_unicode_ci
     container_name: toomate_mysql
     ports:
       - "3306:3306"
@@ -22,6 +21,7 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
+      start_period: 40s
 
   backend:
     image: lucaspaessptech/toomate:backend
