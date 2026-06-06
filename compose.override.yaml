@@ -1,0 +1,20 @@
+# Override de DESENVOLVIMENTO LOCAL.
+# O Docker Compose lê este arquivo automaticamente junto com o compose.yaml
+# (ex.: `docker compose up` na pasta infrastructure).
+#
+# Aqui montamos o ~/.aws do host para o backend usar as credenciais locais
+# (as mesmas que o Grafana já usa). O backend roda como root no container,
+# então o SDK da AWS lê de /root/.aws.
+#
+# NÃO use isto no EC2: em produção a credencial vem da IAM Role da instância,
+# sem arquivo nem chave. Por isso o mount fica fora do compose.yaml base.
+#
+# Obs.: ${USERPROFILE} é variável do Windows. Em host Linux, troque por
+# ${HOME}/.aws:/root/.aws:ro.
+
+services:
+  backend:
+    environment:
+      AWS_PROFILE: default
+    volumes:
+      - ${USERPROFILE}/.aws:/root/.aws:ro
