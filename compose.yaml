@@ -153,13 +153,12 @@ services:
       # Acesso anonimo como Viewer: usuario abre a dashboard sem login (so leitura).
       GF_AUTH_ANONYMOUS_ENABLED: "true"
       GF_AUTH_ANONYMOUS_ORG_ROLE: Viewer
-      AWS_SDK_LOAD_CONFIG: "true"
-      AWS_PROFILE: default
+      # Em produção (EC2) o Athena usa a IAM Role da instância (auth padrão do SDK).
+      # Para dev local, profile + mount do ~/.aws estão no compose.override.yaml.
       AWS_DEFAULT_REGION: us-east-1
     volumes:
       - grafana_data:/var/lib/grafana
       - ./grafana/provisioning:/etc/grafana/provisioning:ro
-      - ${USERPROFILE}/.aws:/home/grafana/.aws:ro
     depends_on:
       - prometheus
     restart: always

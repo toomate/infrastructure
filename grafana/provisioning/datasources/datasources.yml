@@ -13,8 +13,9 @@ datasources:
     type: grafana-athena-datasource
     uid: athena
     jsonData:
-      authType: credentials
-      profile: default
+      # auth padrao do SDK: dev usa o profile do ~/.aws (mount no override);
+      # no EC2 cai na IAM Role da instancia (sem arquivo/chave).
+      authType: default
       defaultRegion: us-east-1
       catalog: AwsDataCatalog
       database: toomate
