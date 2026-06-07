@@ -150,6 +150,9 @@ services:
       GF_SECURITY_ADMIN_USER: admin
       GF_SECURITY_ADMIN_PASSWORD: admin
       GF_INSTALL_PLUGINS: grafana-athena-datasource
+      # Acesso anonimo como Viewer: usuario abre a dashboard sem login (so leitura).
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Viewer
       AWS_SDK_LOAD_CONFIG: "true"
       AWS_PROFILE: default
       AWS_DEFAULT_REGION: us-east-1
