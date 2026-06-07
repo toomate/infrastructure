@@ -107,6 +107,12 @@ resource "aws_instance" "observability" {
   associate_public_ip_address = true
   user_data_replace_on_change = true
 
+  metadata_options {
+    http_endpoint               = "enabled"
+    http_tokens                 = "optional"
+    http_put_response_hop_limit = 2
+  }
+
   root_block_device {
     volume_size           = 16
     volume_type           = "gp3"
@@ -263,6 +269,8 @@ services:
       GF_SECURITY_ADMIN_USER: admin
       GF_SECURITY_ADMIN_PASSWORD: admin
       GF_INSTALL_PLUGINS: grafana-athena-datasource
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Viewer
       AWS_SDK_LOAD_CONFIG: "true"
       AWS_DEFAULT_REGION: us-east-1
     volumes:

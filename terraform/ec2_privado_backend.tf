@@ -4,6 +4,7 @@ resource "aws_instance" "instancia_toomate_privada" {
   instance_type               = "t2.medium"
   key_name                    = "vockey"
   user_data_replace_on_change = true
+  iam_instance_profile        = "LabInstanceProfile"
 
   subnet_id = element([
     aws_subnet.subnet_toomate_privado.id,
@@ -11,6 +12,12 @@ resource "aws_instance" "instancia_toomate_privada" {
   ], count.index)
 
   vpc_security_group_ids = [aws_security_group.sg_privado_tag.id]
+
+  metadata_options {
+    http_endpoint               = "enabled"
+    http_tokens                 = "optional"
+    http_put_response_hop_limit = 2
+  }
 
   root_block_device {
     volume_size           = 16
