@@ -98,6 +98,7 @@ echo "Criando S3 buckets..."
 aws --endpoint-url=$ENDPOINT s3api create-bucket --bucket toomate-raw-2026
 aws --endpoint-url=$ENDPOINT s3api create-bucket --bucket toomate-trusted-2026
 aws --endpoint-url=$ENDPOINT s3api create-bucket --bucket toomate-client-2026
+aws --endpoint-url=$ENDPOINT s3api create-bucket --bucket toomate-comprovantes
 
 
 echo "Criando Load Balancer..."
