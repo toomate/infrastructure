@@ -5,7 +5,7 @@ resource "aws_instance" "instancia_toomate_privada" {
   user_data_replace_on_change = true
   iam_instance_profile        = "LabInstanceProfile"
 
-  subnet_id = element[
+  subnet_id = [
     aws_subnet.subnet_toomate_privado_redis.id
   ]
 
@@ -22,6 +22,10 @@ resource "aws_instance" "instancia_toomate_privada" {
     volume_type           = "gp3"
     delete_on_termination = true
   }
+
+depends_on = [
+  aws_instance.instancia_database_privada
+]
 
   user_data = <<-EOF
 #!/bin/bash
@@ -46,10 +50,6 @@ systemctl start docker
 
 # Pull das imagens Docker
 docker pull redis:7-alpine
-
-until timeout 2 bash -c "cat < /dev/null > /dev/tcp/${aws_instance.instancia_database_privada.private_ip}/3306"; do
-  sleep 5
-done
 
 docker rm -f redis || true
 docker run -d --name redis -p 6379:6379 \

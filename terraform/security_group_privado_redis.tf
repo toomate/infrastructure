@@ -13,12 +13,20 @@ resource "aws_security_group" "sg_privado_redis_tag" {
   }
 
   ingress {
-    description     = "Permitir entrada https e https de todos os ips"
+description = "Permitir acesso da aplicação na porta 8080"
     from_port       = 8080
     to_port         = 8080
     protocol        = "tcp"
     security_groups = [aws_security_group.sg_alb.id]
   }
+
+  ingress {
+  description     = "Redis"
+  from_port       = 6379
+  to_port         = 6379
+  protocol        = "tcp"
+  security_groups = [aws_security_group.sg_privado_tag]
+}
 
   egress {
     from_port   = 0
