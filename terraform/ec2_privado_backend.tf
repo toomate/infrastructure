@@ -61,8 +61,8 @@ docker run -d --name backend -p 8080:8080 \
   -e SPRING_DATASOURCE_URL=jdbc:mysql://${aws_instance.instancia_database_privada.private_ip}:3306/toomate \
   -e SPRING_DATASOURCE_USERNAME=toomate_user \
   -e SPRING_DATASOURCE_PASSWORD=toomate_password \
-  -e SPRING_RABBITMQ_ADDRESSES=amqp://myuser:secret@${aws_instance.instancia_rabbitmq_privada.private_ip}:5672/ \
-  -e SPRING_DATA_REDIS_HOST=${aws_instance.instancia_redis_privada.private_ip} \
+  -e SPRING_RABBITMQ_ADDRESSES=amqp://myuser:secret@${aws_instance.rabbit.private_ip}:5672/ \
+  -e SPRING_DATA_REDIS_HOST=${aws_instance.instancia_toomate_privada_redis.private_ip} \
 
   lucaspaessptech/toomate:backend
 EOF

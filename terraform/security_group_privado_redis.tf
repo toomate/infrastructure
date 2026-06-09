@@ -13,7 +13,7 @@ resource "aws_security_group" "sg_privado_redis_tag" {
   }
 
   ingress {
-description = "Permitir acesso da aplicação na porta 8080"
+description = "Permitir acesso da aplicacao na porta 8080"
     from_port       = 8080
     to_port         = 8080
     protocol        = "tcp"
@@ -25,7 +25,7 @@ description = "Permitir acesso da aplicação na porta 8080"
   from_port       = 6379
   to_port         = 6379
   protocol        = "tcp"
-  security_groups = [aws_security_group.sg_privado_tag]
+  security_groups = [aws_security_group.sg_privado_tag.id]
 }
 
   egress {

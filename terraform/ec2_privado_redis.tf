@@ -1,13 +1,11 @@
-resource "aws_instance" "instancia_toomate_privada" {
+resource "aws_instance" "instancia_toomate_privada_redis" {
   ami                         = "ami-0b6c6ebed2801a5cb"
   instance_type               = "t2.medium"
   key_name                    = "vockey"
   user_data_replace_on_change = true
   iam_instance_profile        = "LabInstanceProfile"
 
-  subnet_id = [
-    aws_subnet.subnet_toomate_privado_redis.id
-  ]
+  subnet_id = aws_subnet.subnet_toomate_privado.id
 
   vpc_security_group_ids = [aws_security_group.sg_privado_redis_tag.id]
 
