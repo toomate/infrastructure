@@ -1,17 +1,15 @@
 resource "aws_instance" "instancia_toomate_privada" {
-  count                       = 2
   ami                         = "ami-0b6c6ebed2801a5cb"
   instance_type               = "t2.medium"
   key_name                    = "vockey"
   user_data_replace_on_change = true
   iam_instance_profile        = "LabInstanceProfile"
 
-  subnet_id = element([
-    aws_subnet.subnet_toomate_privado.id,
-    aws_subnet.subnet_toomate_privado_2.id
-  ], count.index)
+  subnet_id = element[
+    aws_subnet.subnet_toomate_privado.id
+  ]
 
-  vpc_security_group_ids = [aws_security_group.sg_privado_tag.id]
+  vpc_security_group_ids = [aws_security_group.sg_privado_redis_tag.id]
 
   metadata_options {
     http_endpoint               = "enabled"
@@ -47,27 +45,20 @@ systemctl enable docker
 systemctl start docker
 
 # Pull das imagens Docker
-docker pull lucaspaessptech/toomate:backend
-docker pull lucaspaessptech/toomate:frontend
-docker pull rabbitmq:4.2.4-management
+docker pull redis:7-alpine
 
 until timeout 2 bash -c "cat < /dev/null > /dev/tcp/${aws_instance.instancia_database_privada.private_ip}/3306"; do
   sleep 5
 done
 
-docker rm -f backend || true
-docker run -d --name backend -p 8080:8080 \
+docker rm -f redis || true
+docker run -d --name redis -p 6379:6379 \
   --restart unless-stopped \
-  -e SPRING_DATASOURCE_URL=jdbc:mysql://${aws_instance.instancia_database_privada.private_ip}:3306/toomate \
-  -e SPRING_DATASOURCE_USERNAME=toomate_user \
-  -e SPRING_DATASOURCE_PASSWORD=toomate_password \
-  -e SPRING_RABBITMQ_ADDRESSES=amqp://myuser:secret@${aws_instance.instancia_rabbitmq_privada.private_ip}:5672/ \
-  -e SPRING_DATA_REDIS_HOST=${aws_instance.instancia_redis_privada.private_ip} \
+  redis:7-alpine
 
-  lucaspaessptech/toomate:backend
 EOF
 
   tags = {
-    Name = "Instancia privada Toomate ${count.index}"
+    Name = "Instancia privada redis Toomate"
   }
 }
