@@ -6,7 +6,7 @@ resource "aws_instance" "instancia_toomate_privada" {
   iam_instance_profile        = "LabInstanceProfile"
 
   subnet_id = element[
-    aws_subnet.subnet_toomate_privado.id
+    aws_subnet.subnet_toomate_privado_redis.id
   ]
 
   vpc_security_group_ids = [aws_security_group.sg_privado_redis_tag.id]
