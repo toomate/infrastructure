@@ -19,13 +19,13 @@ resource "aws_security_group" "rabbit_sg" {
     security_groups = [aws_security_group.sg_publico_tag.id]
   }
 
-      ingress {
-  description     = "Porta do microserviço de notificações"
+  ingress {
+  description     = "Porta do microservico de notificacoes"
   from_port       = var.microservice_porta
   to_port         = var.microservice_porta
   protocol        = "tcp"
   security_groups = [aws_security_group.sg_alb.id]
-}
+  }
 
   ingress {
     description = "SSH"
