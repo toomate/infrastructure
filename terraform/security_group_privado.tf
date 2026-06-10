@@ -12,6 +12,13 @@ resource "aws_security_group" "sg_privado_tag" {
     security_groups = [aws_security_group.sg_publico_tag.id]
   }
 
+    ingress {
+  from_port       = var.microservice_porta
+  to_port         = var.microservice_porta
+  protocol        = "tcp"
+  security_groups = [aws_security_group.sg_alb.id]
+}
+
   ingress {
     description     = "Permitir entrada https e https de todos os ips"
     from_port       = var.spring_porta

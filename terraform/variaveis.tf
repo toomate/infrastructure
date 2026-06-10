@@ -28,6 +28,12 @@ variable "react_porta" {
   default     = 80
 }
 
+variable "microservice_porta" {
+  description = "Porta para aplicação microservico-notif"
+  type        = number
+  default     = 8181
+}
+
 variable "database_porta" {
   description = "Porta para banco de dados MySQL"
   type        = number

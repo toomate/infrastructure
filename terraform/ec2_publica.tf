@@ -45,6 +45,7 @@ KEY=$(cat /proc/sys/kernel/random/uuid 2>/dev/null || (command -v uuidgen >/dev/
 cat >/etc/toomate/containers.env <<EOT
 API_URL=http://${aws_lb.alb_toomate.dns_name}
 GRAFANA_URL=http://${aws_eip.observability.public_ip}:3001
+VITE_SSE_URL=http://${aws_instance.rabbit.private_ip}:8181/sse/
 VITE_WAHA_API_KEY=$KEY
 VITE_WAHA_API_URL=http://waha:3000
 WAHA_DASHBOARD_USERNAME=admin
