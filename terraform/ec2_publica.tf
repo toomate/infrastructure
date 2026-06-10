@@ -41,21 +41,26 @@ systemctl start docker
 apt install uuid-runtime -y
 mkdir -p /etc/toomate
 KEY=$(cat /proc/sys/kernel/random/uuid 2>/dev/null || (command -v uuidgen >/dev/null 2>&1 && uuidgen) || python3 -c 'import uuid;print(uuid.uuid4())')
-PRIVATE_IP=$(curl -s http://169.254.169.254/latest/meta-data/local-ipv4)
+TOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token" \
+  -H "X-aws-ec2-metadata-token-ttl-seconds: 21600" -s)
+
+PUBLIC_IP=$(curl -s \
+  -H "X-aws-ec2-metadata-token: $TOKEN" \
+  http://169.254.169.254/latest/meta-data/public-ipv4)
 
 cat >/etc/toomate/containers.env <<EOT
 API_URL=http://${aws_lb.alb_toomate.dns_name}
 GRAFANA_URL=http://${aws_eip.observability.public_ip}:3001
 VITE_SSE_URL=http://${aws_instance.rabbit.private_ip}:8181/sse/
 VITE_WAHA_API_KEY=$KEY
-VITE_WAHA_API_URL=http://$PRIVATE_IP:3000
+VITE_WAHA_API_URL=http://$PUBLIC_IP:3000
 WAHA_DASHBOARD_USERNAME=admin
 WAHA_DASHBOARD_PASSWORD=$KEY
 WHATSAPP_SWAGGER_USERNAME=admin
 WHATSAPP_SWAGGER_PASSWORD=$KEY
 WHATSAPP_DEFAULT_ENGINE=WEBJS
 WAHA_NAMESPACE=all
-WAHA_BASE_URL=http://$PRIVATE_IP:3000
+WAHA_BASE_URL=http://$PUBLIC_IP:3000
 WAHA_LOG_FORMAT=JSON
 WAHA_LOG_LEVEL=info
 WAHA_PRINT_QR=False
@@ -63,7 +68,7 @@ WAHA_API_KEY=$KEY
 EOT
 
 docker network create toomate_network || true
-docker run --network toomate_network --env-file /etc/toomate/containers.env --name waha -p 3000:3000 -d devlikeapro/waha
+docker run -v `pwd`/.sessions:/app/.sessions --network toomate_network --env-file /etc/toomate/containers.env --name waha -p 3000:3000 -d devlikeapro/waha
 docker run --network toomate_network --env-file /etc/toomate/containers.env --name frontend -p 80:80 -d lucaspaessptech/toomate:frontend
 EOF
 }
