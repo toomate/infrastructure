@@ -192,7 +192,7 @@ scrape_configs:
   - job_name: microservico-notif
     metrics_path: /actuator/prometheus
     static_configs:
-      - targets: ["${aws_instance.rabbit.private_ip}:8182"]
+      - targets: ["${aws_instance.rabbit.private_ip}:8181"] 
 
   - job_name: mysql
     static_configs:
