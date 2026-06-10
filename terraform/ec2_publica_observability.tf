@@ -96,6 +96,31 @@ resource "aws_vpc_security_group_ingress_rule" "microservice_scrape" {
   description                  = "Prometheus scrape do microservico-notif"
 }
 
+# Bucket com os JSONs de dashboards do Grafana. A EC2 baixa no boot (e via
+# cron sync), mantendo o user_data pequeno e permitindo editar dashboards
+# sem recriar a instancia (so re-sobe o objeto no S3).
+resource "aws_s3_bucket" "grafana_dashboards" {
+  bucket        = "toomate-grafana-2026"
+  force_destroy = true
+
+  tags = {
+    Name        = "grafana-dashboards"
+    Environment = "Dev"
+  }
+}
+
+# Sobe todo .json de grafana/provisioning/dashboards/** preservando a subpasta
+# (infra/ = Visao Adm, cliente/ = Visao Cliente).
+resource "aws_s3_object" "grafana_dashboards" {
+  for_each = fileset("${path.module}/../grafana/provisioning/dashboards", "**/*.json")
+
+  bucket       = aws_s3_bucket.grafana_dashboards.id
+  key          = "dashboards/${each.value}"
+  source       = "${path.module}/../grafana/provisioning/dashboards/${each.value}"
+  etag         = filemd5("${path.module}/../grafana/provisioning/dashboards/${each.value}")
+  content_type = "application/json"
+}
+
 resource "aws_instance" "observability" {
   ami                  = "ami-0b6c6ebed2801a5cb"
   instance_type        = "t3.small"
@@ -236,33 +261,34 @@ providers:
       path: /etc/grafana/provisioning/dashboards/cliente
 YAML
 
-# ---- Baixar dashboards comunidade (mesmos que rodam local) ----
-apt-get install -y python3
+# ---- Dashboards: baixados do S3 (mantem o user_data pequeno) ----
+# Instala AWS CLI v2 (usa a IAM Role da instancia para ler o bucket).
+apt-get install -y unzip
+curl -sSL "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o /tmp/awscliv2.zip
+unzip -q /tmp/awscliv2.zip -d /tmp
+/tmp/aws/install
 
-download_dash() {
-  local id=$1 rev=$2 file=$3
-  curl -sSL "https://grafana.com/api/dashboards/$id/revisions/$rev/download" -o "/tmp/$file"
-  python3 - "$file" <<'PYEOF'
-import json, sys
-fname = sys.argv[1]
-d = json.load(open('/tmp/' + fname))
-for k in ('__inputs', '__requires', '__elements'):
-    d.pop(k, None)
-d['id'] = None
-d['uid'] = None
-txt = json.dumps(d).replace('$${DS_PROMETHEUS}', 'Prometheus')
-open('/opt/observability/grafana/provisioning/dashboards/infra/' + fname, 'w').write(txt)
-PYEOF
-}
+# Script de sync: sincroniza POR SUBPASTA (infra/cliente) para que o --delete
+# nunca remova o dashboards.yml (config dos providers) que vive na pasta pai.
+cat >/usr/local/bin/grafana-dash-sync.sh <<'SH'
+#!/bin/bash
+for d in infra cliente; do
+  /usr/local/bin/aws s3 sync \
+    s3://${aws_s3_bucket.grafana_dashboards.bucket}/dashboards/$d/ \
+    /opt/observability/grafana/provisioning/dashboards/$d/ \
+    --region us-east-1 --delete
+done
+SH
+chmod +x /usr/local/bin/grafana-dash-sync.sh
 
-download_dash 4701  10 spring-boot-jvm.json
-download_dash 14057 1  mysql.json
-download_dash 10991 15 rabbitmq.json
+# Primeira sincronizacao no boot.
+/usr/local/bin/grafana-dash-sync.sh
 
-# ---- Dashboards custom da Visao Cliente ----
-%{ for f in fileset("${path.module}/../grafana/provisioning/dashboards/cliente", "*.json") ~}
-echo '${base64encode(file("${path.module}/../grafana/provisioning/dashboards/cliente/${f}"))}' | base64 -d > /opt/observability/grafana/provisioning/dashboards/cliente/${f}
-%{ endfor ~}
+# Cron: re-sincroniza a cada 2 min. Assim, editar um dashboard (terraform apply
+# re-sobe o objeto no S3) reflete no Grafana sem recriar a EC2.
+cat >/etc/cron.d/grafana-dash-sync <<'CRON'
+*/2 * * * * root /usr/local/bin/grafana-dash-sync.sh >/dev/null 2>&1
+CRON
 
 # ---- docker-compose.yml ----
 cat >/opt/observability/docker-compose.yml <<YAML
