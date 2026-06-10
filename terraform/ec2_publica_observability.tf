@@ -247,6 +247,11 @@ download_dash 4701  10 spring-boot-jvm.json
 download_dash 14057 1  mysql.json
 download_dash 10991 15 rabbitmq.json
 
+# ---- Dashboards custom da Visao Cliente ----
+%{ for f in fileset("${path.module}/../grafana/provisioning/dashboards/cliente", "*.json") ~}
+echo '${base64encode(file("${path.module}/../grafana/provisioning/dashboards/cliente/${f}"))}' | base64 -d > /opt/observability/grafana/provisioning/dashboards/cliente/${f}
+%{ endfor ~}
+
 # ---- docker-compose.yml ----
 cat >/opt/observability/docker-compose.yml <<YAML
 services:
@@ -307,17 +312,28 @@ docker compose up -d
 EOF
 }
 
+# Elastic IP fixo: mantem o mesmo endereco mesmo quando a EC2 e recriada
+# (ex: mudanca no user_data com user_data_replace_on_change = true).
+resource "aws_eip" "observability" {
+  domain   = "vpc"
+  instance = aws_instance.observability.id
+
+  tags = {
+    Name = "toomate-observability-eip"
+  }
+}
+
 output "observability_public_ip" {
-  description = "IP publico da EC2 de observability"
-  value       = aws_instance.observability.public_ip
+  description = "IP publico (Elastic IP) da EC2 de observability"
+  value       = aws_eip.observability.public_ip
 }
 
 output "grafana_url" {
   description = "URL do Grafana"
-  value       = "http://${aws_instance.observability.public_ip}:3001"
+  value       = "http://${aws_eip.observability.public_ip}:3001"
 }
 
 output "prometheus_url" {
   description = "URL do Prometheus"
-  value       = "http://${aws_instance.observability.public_ip}:9090"
+  value       = "http://${aws_eip.observability.public_ip}:9090"
 }
