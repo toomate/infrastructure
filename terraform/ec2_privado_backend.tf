@@ -63,7 +63,6 @@ docker run -d --name backend -p 8080:8080 \
   -e SPRING_DATASOURCE_PASSWORD=toomate_password \
   -e SPRING_RABBITMQ_ADDRESSES=amqp://myuser:secret@${aws_instance.rabbit.private_ip}:5672/ \
   -e SPRING_DATA_REDIS_HOST=${aws_instance.instancia_toomate_privada_redis.private_ip} \
-
   lucaspaessptech/toomate:backend
 EOF
 
