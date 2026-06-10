@@ -53,7 +53,7 @@ services:
       - SPRING_RABBITMQ_USERNAME=myuser
       - SPRING_RABBITMQ_PASSWORD=secret
     ports:
-      - "8182:8182"
+      - "8181:8181"
     depends_on:
       - rabbitmq
 YAML
