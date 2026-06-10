@@ -200,6 +200,18 @@ datasources:
       database: toomate
       workgroup: toomate
       outputLocation: s3://${aws_s3_bucket.athena_results.bucket}/output/
+
+  # Conexao direta no MySQL para dashboards que rodam SQL na base transacional.
+  # Prod: aponta para o IP privado da EC2 do banco (porta liberada pela regra mysql_scrape).
+  - name: MySQL Toomate
+    type: mysql
+    uid: mysql-toomate
+    url: ${aws_instance.instancia_database_privada.private_ip}:${var.database_porta}
+    user: ${var.db_user}
+    jsonData:
+      database: ${var.db_name}
+    secureJsonData:
+      password: ${var.db_password}
 YAML
 
 # ---- Dashboards provider ----

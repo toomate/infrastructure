@@ -1,0 +1,62 @@
+{
+  "id": null,
+  "uid": "dash-insights",
+  "title": "Exemplo - Lotes (MySQL)",
+  "tags": ["mysql", "lote"],
+  "timezone": "browser",
+  "schemaVersion": 38,
+  "version": 1,
+  "refresh": "",
+  "description": "Dashboard de exemplo apontando para a datasource 'MySQL Toomate' (uid mysql-toomate). Cada painel roda SQL direto na base. Para criar o seu, copie um painel do array 'panels', troque o 'title', o 'rawSql' e o 'gridPos'. Mantenha o bloco 'datasource' apontando para mysql-toomate.",
+  "time": {
+    "from": "now-1y",
+    "to": "now"
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "Lotes vencidos com saldo",
+      "description": "Exemplo de painel de valor unico (stat). Troque o rawSql por qualquer SELECT que retorne um numero.",
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 0 },
+      "datasource": { "type": "mysql", "uid": "mysql-toomate" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "mysql", "uid": "mysql-toomate" },
+          "rawQuery": true,
+          "format": "table",
+          "rawSql": "SELECT COUNT(*) AS total FROM lote WHERE quantidadeAtual > 0 AND dataValidade < CURDATE();"
+        }
+      ],
+      "fieldConfig": { "defaults": {}, "overrides": [] },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "value"
+      }
+    },
+    {
+      "id": 2,
+      "type": "table",
+      "title": "Lotes vencidos (detalhe)",
+      "description": "Exemplo de painel de tabela. Troque o rawSql por qualquer SELECT; as colunas viram colunas da tabela.",
+      "gridPos": { "h": 10, "w": 18, "x": 6, "y": 0 },
+      "datasource": { "type": "mysql", "uid": "mysql-toomate" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "mysql", "uid": "mysql-toomate" },
+          "rawQuery": true,
+          "format": "table",
+          "rawSql": "SELECT idLote, dataValidade, quantidadeAtual, unidadeMedida FROM lote WHERE quantidadeAtual > 0 AND dataValidade < CURDATE() ORDER BY dataValidade ASC;"
+        }
+      ],
+      "fieldConfig": { "defaults": {}, "overrides": [] },
+      "options": {
+        "showHeader": true
+      }
+    }
+  ]
+}

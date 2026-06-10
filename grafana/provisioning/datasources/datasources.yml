@@ -22,3 +22,14 @@ datasources:
       workgroup: toomate
       outputLocation: s3://toomate-athena-results-2026/
     editable: true
+
+  - name: MySQL Toomate
+    type: mysql
+    uid: mysql-toomate
+    url: mysql:3306
+    user: root
+    jsonData:
+      database: toomate
+    secureJsonData:
+      password: root
+    editable: true
