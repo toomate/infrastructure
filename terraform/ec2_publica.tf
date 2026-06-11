@@ -55,7 +55,8 @@ PUBLIC_IP=$(curl -s \
 cat >/etc/toomate/containers.env <<EOT
 API_URL=http://${aws_lb.alb_toomate.dns_name}
 GRAFANA_URL=http://${aws_eip.observability.public_ip}:3001
-VITE_SSE_URL=http://${aws_instance.rabbit.private_ip}:8181/sse/
+VITE_SSE_URL=/sse/
+SSE_UPSTREAM=http://${aws_instance.rabbit.private_ip}:8181
 VITE_WAHA_API_KEY=$KEY
 VITE_WAHA_API_URL=http://$PUBLIC_IP:3000
 WAHA_DASHBOARD_USERNAME=admin
