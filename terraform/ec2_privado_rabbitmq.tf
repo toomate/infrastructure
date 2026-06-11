@@ -4,7 +4,16 @@ resource "aws_instance" "rabbit" {
   subnet_id              = aws_subnet.subnet_toomate_privado.id
   key_name               = "vockey"
   vpc_security_group_ids = [aws_security_group.rabbit_sg.id]
-  tags                   = { Name = "rabbitmq-single" }
+
+  # IP privado fixo: ao recriar o rabbit (ex: mudanca no user_data) o IP nao muda,
+  # entao backend, site e observability (que referenciam este IP) nao recriam junto.
+  private_ip = "10.0.0.76"
+
+  # Faz a mudanca de user_data (ex: habilitar plugin de metricas) recriar a EC2,
+  # caso contrario o novo user_data nunca roda na instancia existente.
+  user_data_replace_on_change = true
+
+  tags = { Name = "rabbitmq-single" }
 
   root_block_device {
     volume_size           = 20
@@ -33,6 +42,13 @@ apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin do
 systemctl enable --now docker
 
 mkdir -p /opt/microservices
+
+# Habilita o plugin de metricas do RabbitMQ (expoe Prometheus em :15692).
+# Sem isso nada escuta no 15692 e o job 'rabbitmq' do Prometheus fica down.
+cat >/opt/microservices/enabled_plugins <<'PLUGINS'
+[rabbitmq_management,rabbitmq_prometheus].
+PLUGINS
+
 cat >/opt/microservices/docker-compose.yml <<'YAML'
 version: '3.8'
 services:
@@ -41,9 +57,12 @@ services:
     environment:
       - 'RABBITMQ_DEFAULT_PASS=secret'
       - 'RABBITMQ_DEFAULT_USER=myuser'
+    volumes:
+      - ./enabled_plugins:/etc/rabbitmq/enabled_plugins:ro
     ports:
       - "5672:5672"
       - "15672:15672"
+      - "15692:15692"
 
   microservico-notif:
     image: lucaspaessptech/toomate:microservice
