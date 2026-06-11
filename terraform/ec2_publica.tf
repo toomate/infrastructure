@@ -16,6 +16,10 @@ resource "aws_instance" "instancia_toomate_publica" {
     volume_type = "gp3"
   }
 
+  depends_on = [
+  aws_instance.rabbit
+]
+
   user_data = <<-EOF
 #!/bin/bash
 set -e
