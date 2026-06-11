@@ -56,45 +56,10 @@ resource "aws_security_group" "sg_observability" {
   }
 }
 
-# Regras aditivas nos SGs existentes para permitir scrape vindo desta EC2.
-# Usam aws_vpc_security_group_ingress_rule porque os SGs originais ja tem
-# regras inline (nao da pra misturar com aws_security_group_rule).
-
-resource "aws_vpc_security_group_ingress_rule" "backend_scrape" {
-  security_group_id            = aws_security_group.sg_privado_tag.id
-  referenced_security_group_id = aws_security_group.sg_observability.id
-  from_port                    = var.spring_porta
-  to_port                      = var.spring_porta
-  ip_protocol                  = "tcp"
-  description                  = "Prometheus scrape do backend"
-}
-
-resource "aws_vpc_security_group_ingress_rule" "mysql_scrape" {
-  security_group_id            = aws_security_group.sg_privado_database.id
-  referenced_security_group_id = aws_security_group.sg_observability.id
-  from_port                    = var.database_porta
-  to_port                      = var.database_porta
-  ip_protocol                  = "tcp"
-  description                  = "mysqld-exporter scrape do MySQL"
-}
-
-resource "aws_vpc_security_group_ingress_rule" "rabbitmq_metrics_scrape" {
-  security_group_id            = aws_security_group.rabbit_sg.id
-  referenced_security_group_id = aws_security_group.sg_observability.id
-  from_port                    = 15692
-  to_port                      = 15692
-  ip_protocol                  = "tcp"
-  description                  = "Prometheus scrape do plugin rabbitmq_prometheus"
-}
-
-resource "aws_vpc_security_group_ingress_rule" "microservice_scrape" {
-  security_group_id            = aws_security_group.rabbit_sg.id
-  referenced_security_group_id = aws_security_group.sg_observability.id
-  from_port                    = 8182
-  to_port                      = 8182
-  ip_protocol                  = "tcp"
-  description                  = "Prometheus scrape do microservico-notif"
-}
+# As regras que liberam o Prometheus (sg_observability) a coletar metricas
+# foram movidas para blocos ingress inline nos proprios SGs (sg_privado_tag,
+# sg_privado_database, rabbit_sg). Como o ingress inline e autoritativo, manter
+# o scrape como recurso separado fazia todo apply completo revogar essas regras.
 
 # Bucket com os JSONs de dashboards do Grafana. A EC2 baixa no boot (e via
 # cron sync), mantendo o user_data pequeno e permitindo editar dashboards

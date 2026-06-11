@@ -27,6 +27,15 @@ resource "aws_security_group" "sg_privado_database" {
     ]
   }
 
+  # mysqld-exporter (EC2 observability) coleta metricas do MySQL na 3306.
+  ingress {
+    description     = "mysqld-exporter scrape do MySQL (observability)"
+    from_port       = var.database_porta
+    to_port         = var.database_porta
+    protocol        = "tcp"
+    security_groups = [aws_security_group.sg_observability.id]
+  }
+
   # Egress - permitir todo tráfego saindo
   egress {
     from_port   = 0

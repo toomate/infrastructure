@@ -27,6 +27,15 @@ resource "aws_security_group" "sg_privado_tag" {
   security_groups = [aws_security_group.sg_alb.id]
 }
 
+  # Prometheus (EC2 observability) coleta /actuator/prometheus do backend.
+  ingress {
+    description     = "Prometheus scrape do backend (observability)"
+    from_port       = var.spring_porta
+    to_port         = var.spring_porta
+    protocol        = "tcp"
+    security_groups = [aws_security_group.sg_observability.id]
+  }
+
   egress {
     from_port   = 0
     to_port     = 0

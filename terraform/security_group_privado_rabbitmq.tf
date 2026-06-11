@@ -35,6 +35,24 @@ resource "aws_security_group" "rabbit_sg" {
     security_groups = [aws_security_group.sg_publico_tag.id]
   }
 
+  # Prometheus (EC2 observability) coleta o plugin rabbitmq_prometheus.
+  ingress {
+    description     = "Prometheus scrape do plugin rabbitmq_prometheus (observability)"
+    from_port       = 15692
+    to_port         = 15692
+    protocol        = "tcp"
+    security_groups = [aws_security_group.sg_observability.id]
+  }
+
+  # Prometheus coleta o microservico-notif (mesma porta da app: microservice_porta).
+  ingress {
+    description     = "Prometheus scrape do microservico-notif (observability)"
+    from_port       = var.microservice_porta
+    to_port         = var.microservice_porta
+    protocol        = "tcp"
+    security_groups = [aws_security_group.sg_observability.id]
+  }
+
   egress {
     from_port   = 0
     to_port     = 0
