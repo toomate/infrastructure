@@ -9,7 +9,7 @@ resource "aws_s3_bucket" "athena_results" {
 }
 
 resource "aws_glue_catalog_database" "toomate" {
-  name        = "toomate"
+  name        = "toomate_db"
   description = "Data catalog do toomate (raw + trusted)"
 }
 
