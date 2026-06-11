@@ -1,7 +1,8 @@
 resource "aws_instance" "instancia_toomate_publica" {
-  ami           = "ami-0b6c6ebed2801a5cb"
-  instance_type = "t2.medium"
-  key_name      = "vockey"
+  ami                         = "ami-0b6c6ebed2801a5cb"
+  instance_type               = "t2.medium"
+  key_name                    = "vockey"
+  user_data_replace_on_change = true
 
   subnet_id = aws_subnet.subnet_toomate_publico.id
   vpc_security_group_ids = [aws_security_group.sg_publico_tag.id]
