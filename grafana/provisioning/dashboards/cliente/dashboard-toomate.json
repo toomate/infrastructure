@@ -1,0 +1,1631 @@
+{
+  "apiVersion": "dashboard.grafana.app/v2",
+  "kind": "Dashboard",
+  "metadata": {
+    "name": "restaurante-recomendacoes-estoque-v2",
+    "namespace": "default",
+    "uid": "db89ee5e-3079-4df9-ada4-c8a165fa7763",
+    "resourceVersion": "1780959218101018",
+    "generation": 4,
+    "creationTimestamp": "2026-06-08T22:33:11Z",
+    "labels": {
+      "grafana.app/deprecatedInternalID": "1464910267498496"
+    },
+    "annotations": {
+      "grafana.app/createdBy": "user:bfojxxe16napsc",
+      "grafana.app/folder": "",
+      "grafana.app/saved-from-ui": "Grafana v13.0.2 (3fcdbc5a)",
+      "grafana.app/updatedBy": "user:bfojxxe16napsc",
+      "grafana.app/updatedTimestamp": "2026-06-08T22:53:38Z"
+    }
+  },
+  "spec": {
+    "annotations": [
+      {
+        "kind": "AnnotationQuery",
+        "spec": {
+          "query": {
+            "kind": "DataQuery",
+            "group": "grafana",
+            "version": "v0",
+            "datasource": {
+              "name": "-- Grafana --"
+            },
+            "spec": {}
+          },
+          "enable": true,
+          "hide": true,
+          "iconColor": "rgba(0, 211, 255, 1)",
+          "name": "Annotations & Alerts",
+          "builtIn": true
+        }
+      }
+    ],
+    "cursorSync": "Crosshair",
+    "description": "Dashboard de recomendações baseadas no comportamento histórico de insumos do restaurante",
+    "editable": true,
+    "elements": {
+      "panel-1": {
+        "kind": "Panel",
+        "spec": {
+          "id": 1,
+          "title": "Total de Retiradas no Mês",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "mysql",
+                      "version": "v0",
+                      "datasource": { "type": "mysql", "uid": "mysql-toomate" },
+                      "spec": {
+                        "format": "table",
+                        "rawSql": "SELECT SUM(h.quantidadeRetirada) AS value FROM historicoLote h WHERE MONTH(h.dataHoraAlteracao) = MONTH(CURDATE()) AND YEAR(h.dataHoraAlteracao) = YEAR(CURDATE());"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "13.0.2",
+            "spec": {
+              "options": {
+                "colorMode": "background",
+                "graphMode": "none",
+                "justifyMode": "center",
+                "orientation": "auto",
+                "percentChangeColorMode": "standard",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "textMode": "auto",
+                "wideLayout": true
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "short",
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "green"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-10": {
+        "kind": "Panel",
+        "spec": {
+          "id": 10,
+          "title": "Top 10 Insumos Mais Utilizados (Mês Atual)",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "mysql",
+                      "version": "v0",
+                      "datasource": { "type": "mysql", "uid": "mysql-toomate" },
+                      "spec": {
+                        "format": "table",
+                        "rawSql": "SELECT i.nome AS insumo, SUM(h.quantidadeRetirada) AS total_retiradas FROM historicoLote h INNER JOIN lote l ON l.idLote = h.fkLote INNER JOIN marca m ON m.idMarca = l.fkMarca INNER JOIN insumo i ON i.idInsumo = m.fkInsumo WHERE MONTH(h.dataHoraAlteracao) = MONTH(CURDATE()) AND YEAR(h.dataHoraAlteracao) = YEAR(CURDATE()) GROUP BY i.idInsumo, i.nome ORDER BY total_retiradas DESC LIMIT 10;"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "barchart",
+            "version": "13.0.2",
+            "spec": {
+              "options": {
+                "barRadius": 0.1,
+                "barWidth": 0.7,
+                "fullHighlight": false,
+                "groupWidth": 0.7,
+                "legend": {
+                  "calcs": [],
+                  "displayMode": "list",
+                  "placement": "bottom",
+                  "showLegend": true
+                },
+                "orientation": "horizontal",
+                "showValue": "always",
+                "stacking": "none",
+                "tooltip": {
+                  "hideZeros": false,
+                  "mode": "single",
+                  "sort": "none"
+                },
+                "xTickLabelRotation": 0,
+                "xTickLabelSpacing": 100
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "short",
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "green"
+                      },
+                      {
+                        "value": 80,
+                        "color": "red"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "palette-classic"
+                  },
+                  "custom": {
+                    "axisBorderShow": false,
+                    "axisCenteredZero": false,
+                    "axisColorMode": "text",
+                    "axisLabel": "",
+                    "axisPlacement": "auto",
+                    "fillOpacity": 80,
+                    "gradientMode": "none",
+                    "hideFrom": {
+                      "legend": false,
+                      "tooltip": false,
+                      "viz": false
+                    },
+                    "lineWidth": 1,
+                    "scaleDistribution": {
+                      "type": "linear"
+                    },
+                    "thresholdsStyle": {
+                      "mode": "off"
+                    }
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-11": {
+        "kind": "Panel",
+        "spec": {
+          "id": 11,
+          "title": "Distribuição de Retiradas por Categoria (Mês Atual)",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "mysql",
+                      "version": "v0",
+                      "datasource": { "type": "mysql", "uid": "mysql-toomate" },
+                      "spec": {
+                        "editorMode": "code",
+                        "format": "table",
+                        "rawQuery": true,
+                        "rawSql": "SELECT c.nome AS categoria, SUM(h.quantidadeRetirada) AS total_retiradas FROM historicoLote h INNER JOIN lote l ON l.idLote = h.fkLote INNER JOIN marca m ON m.idMarca = l.fkMarca INNER JOIN insumo i ON i.idInsumo = m.fkInsumo INNER JOIN categoria c ON c.idCategoria = i.fkCategoria WHERE MONTH(h.dataHoraAlteracao) = MONTH(CURDATE()) AND YEAR(h.dataHoraAlteracao) = YEAR(CURDATE()) GROUP BY c.idCategoria, c.nome ORDER BY total_retiradas DESC;",
+                        "sql": {
+                          "columns": [
+                            {
+                              "parameters": [],
+                              "type": "function"
+                            }
+                          ],
+                          "groupBy": [
+                            {
+                              "property": {
+                                "type": "string"
+                              },
+                              "type": "groupBy"
+                            }
+                          ],
+                          "limit": 50
+                        }
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "piechart",
+            "version": "13.0.2",
+            "spec": {
+              "options": {
+                "displayLabels": [
+                  "percent"
+                ],
+                "legend": {
+                  "displayMode": "list",
+                  "placement": "bottom",
+                  "showLegend": true
+                },
+                "pieType": "donut",
+                "reduceOptions": {
+                  "calcs": [],
+                  "fields": "",
+                  "values": true
+                },
+                "sort": "desc",
+                "tooltip": {
+                  "hideZeros": false,
+                  "mode": "single",
+                  "sort": "none"
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "short",
+                  "color": {
+                    "mode": "palette-classic"
+                  },
+                  "custom": {
+                    "hideFrom": {
+                      "legend": false,
+                      "tooltip": false,
+                      "viz": false
+                    }
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-20": {
+        "kind": "Panel",
+        "spec": {
+          "id": 20,
+          "title": "⬆️ Insumos com Alta no Consumo — Reposição Maior Recomendada",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "mysql",
+                      "version": "v0",
+                      "datasource": { "type": "mysql", "uid": "mysql-toomate" },
+                      "spec": {
+                        "format": "table",
+                        "rawSql": "SELECT i.nome AS insumo, c.nome AS categoria, COALESCE(ant.total, 0) AS mes_anterior, COALESCE(atu.total, 0) AS mes_atual, ROUND(((COALESCE(atu.total, 0) - COALESCE(ant.total, 0)) / NULLIF(COALESCE(ant.total, 1), 0)) * 100, 1) AS variacao_percentual, CONCAT('Repor ', COALESCE(atu.total, 0), ' un. (alta de ', ROUND(((COALESCE(atu.total, 0) - COALESCE(ant.total, 0)) / NULLIF(COALESCE(ant.total, 1), 0)) * 100, 0), '%)') AS recomendacao FROM insumo i INNER JOIN categoria c ON c.idCategoria = i.fkCategoria LEFT JOIN ( SELECT m.fkInsumo, SUM(h.quantidadeRetirada) AS total FROM historicoLote h INNER JOIN lote l ON l.idLote = h.fkLote INNER JOIN marca m ON m.idMarca = l.fkMarca WHERE MONTH(h.dataHoraAlteracao) = MONTH(CURDATE()) AND YEAR(h.dataHoraAlteracao) = YEAR(CURDATE()) GROUP BY m.fkInsumo ) atu ON atu.fkInsumo = i.idInsumo LEFT JOIN ( SELECT m.fkInsumo, SUM(h.quantidadeRetirada) AS total FROM historicoLote h INNER JOIN lote l ON l.idLote = h.fkLote INNER JOIN marca m ON m.idMarca = l.fkMarca WHERE MONTH(h.dataHoraAlteracao) = MONTH(DATE_SUB(CURDATE(), INTERVAL 1 MONTH)) AND YEAR(h.dataHoraAlteracao) = YEAR(DATE_SUB(CURDATE(), INTERVAL 1 MONTH)) GROUP BY m.fkInsumo ) ant ON ant.fkInsumo = i.idInsumo WHERE i.ativo = 1 AND COALESCE(atu.total, 0) > COALESCE(ant.total, 0) ORDER BY variacao_percentual DESC LIMIT 15;"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "table",
+            "version": "13.0.2",
+            "spec": {
+              "options": {
+                "cellHeight": "sm",
+                "showHeader": true,
+                "sortBy": [
+                  {
+                    "desc": true,
+                    "displayName": "Variação %"
+                  }
+                ]
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "green"
+                      },
+                      {
+                        "value": 80,
+                        "color": "red"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
+                  },
+                  "custom": {
+                    "align": "auto",
+                    "cellOptions": {
+                      "type": "auto"
+                    },
+                    "filterable": true,
+                    "footer": {
+                      "reducers": []
+                    },
+                    "inspect": false
+                  }
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "variacao_percentual"
+                    },
+                    "properties": [
+                      {
+                        "id": "unit",
+                        "value": "percent"
+                      },
+                      {
+                        "id": "custom.cellOptions",
+                        "value": {
+                          "mode": "gradient",
+                          "type": "color-background"
+                        }
+                      },
+                      {
+                        "id": "thresholds",
+                        "value": {
+                          "mode": "absolute",
+                          "steps": [
+                            {
+                              "color": "green",
+                              "value": 0
+                            },
+                            {
+                              "color": "yellow",
+                              "value": 20
+                            },
+                            {
+                              "color": "red",
+                              "value": 50
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "mes_anterior"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "Retiradas Mês Anterior"
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "mes_atual"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "Retiradas Mês Atual"
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "variacao_percentual"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "Variação %"
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "recomendacao"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "Recomendação de Reposição"
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Variação %"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.width",
+                        "value": 154
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Retiradas Mês Atual"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.width",
+                        "value": 191
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Retiradas Mês Anterior"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.width",
+                        "value": 198
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "panel-21": {
+        "kind": "Panel",
+        "spec": {
+          "id": 21,
+          "title": "⬇️ Insumos com Queda no Consumo — Reposição Menor Recomendada",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "mysql",
+                      "version": "v0",
+                      "datasource": { "type": "mysql", "uid": "mysql-toomate" },
+                      "spec": {
+                        "format": "table",
+                        "rawSql": "SELECT i.nome AS insumo, c.nome AS categoria, COALESCE(ant.total, 0) AS mes_anterior, COALESCE(atu.total, 0) AS mes_atual, ROUND(((COALESCE(atu.total, 0) - COALESCE(ant.total, 0)) / NULLIF(COALESCE(ant.total, 1), 0)) * 100, 1) AS variacao_percentual FROM insumo i INNER JOIN categoria c ON c.idCategoria = i.fkCategoria LEFT JOIN ( SELECT m.fkInsumo, SUM(h.quantidadeRetirada) AS total FROM historicoLote h INNER JOIN lote l ON l.idLote = h.fkLote INNER JOIN marca m ON m.idMarca = l.fkMarca WHERE MONTH(h.dataHoraAlteracao) = MONTH(CURDATE()) AND YEAR(h.dataHoraAlteracao) = YEAR(CURDATE()) GROUP BY m.fkInsumo ) atu ON atu.fkInsumo = i.idInsumo LEFT JOIN ( SELECT m.fkInsumo, SUM(h.quantidadeRetirada) AS total FROM historicoLote h INNER JOIN lote l ON l.idLote = h.fkLote INNER JOIN marca m ON m.idMarca = l.fkMarca WHERE MONTH(h.dataHoraAlteracao) = MONTH(DATE_SUB(CURDATE(), INTERVAL 1 MONTH)) AND YEAR(h.dataHoraAlteracao) = YEAR(DATE_SUB(CURDATE(), INTERVAL 1 MONTH)) GROUP BY m.fkInsumo ) ant ON ant.fkInsumo = i.idInsumo WHERE i.ativo = 1 AND COALESCE(atu.total, 0) < COALESCE(ant.total, 0) ORDER BY variacao_percentual ASC LIMIT 15;"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "table",
+            "version": "13.0.2",
+            "spec": {
+              "options": {
+                "cellHeight": "sm",
+                "showHeader": true,
+                "sortBy": [
+                  {
+                    "desc": false,
+                    "displayName": "Variação %"
+                  }
+                ]
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "green"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
+                  },
+                  "custom": {
+                    "align": "auto",
+                    "cellOptions": {
+                      "type": "auto"
+                    },
+                    "filterable": true,
+                    "footer": {
+                      "reducers": []
+                    },
+                    "inspect": false
+                  }
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "variacao_percentual"
+                    },
+                    "properties": [
+                      {
+                        "id": "unit",
+                        "value": "percent"
+                      },
+                      {
+                        "id": "custom.cellOptions",
+                        "value": {
+                          "mode": "gradient",
+                          "type": "color-background"
+                        }
+                      },
+                      {
+                        "id": "thresholds",
+                        "value": {
+                          "mode": "absolute",
+                          "steps": [
+                            {
+                              "color": "green",
+                              "value": 0
+                            },
+                            {
+                              "color": "yellow",
+                              "value": -20
+                            },
+                            {
+                              "color": "red",
+                              "value": -50
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "mes_anterior"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "Retiradas Mês Anterior"
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "mes_atual"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "Retiradas Mês Atual"
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "variacao_percentual"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "Variação %"
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "panel-30": {
+        "kind": "Panel",
+        "spec": {
+          "id": 30,
+          "title": "Melhor Fornecedor por Insumo (baseado no histórico de preços)",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "mysql",
+                      "version": "v0",
+                      "datasource": { "type": "mysql", "uid": "mysql-toomate" },
+                      "spec": {
+                        "editorMode": "code",
+                        "format": "table",
+                        "rawQuery": true,
+                        "rawSql": "SELECT insumo, categoria, fornecedor_recomendado, telefone, whatsapp,\r\n       preco_medio, preco_minimo, total_compras\r\nFROM (\r\n    SELECT\r\n        i.nome AS insumo,\r\n        cat.nome AS categoria,\r\n        f.razaoSocial AS fornecedor_recomendado,\r\n        f.telefone AS telefone,\r\n        f.linkWhatsapp AS whatsapp,\r\n        ROUND(AVG(l.precoUnit), 2) AS preco_medio,\r\n        ROUND(MIN(l.precoUnit), 2) AS preco_minimo,\r\n        COUNT(l.idLote) AS total_compras,\r\n        ROW_NUMBER() OVER (\r\n            PARTITION BY i.idInsumo\r\n            ORDER BY AVG(l.precoUnit) ASC\r\n        ) AS rn\r\n    FROM lote l\r\n    INNER JOIN marca m ON m.idMarca = l.fkMarca\r\n    INNER JOIN insumo i ON i.idInsumo = m.fkInsumo\r\n    INNER JOIN categoria cat ON cat.idCategoria = i.fkCategoria\r\n    INNER JOIN fornecedor f ON f.idFornecedor = m.fkFornecedor\r\n    WHERE i.ativo = 1\r\n    GROUP BY i.idInsumo, i.nome, cat.nome, f.idFornecedor, f.razaoSocial, f.telefone, f.linkWhatsapp\r\n) ranked\r\nWHERE rn = 1\r\nORDER BY insumo;",
+                        "sql": {
+                          "columns": [
+                            {
+                              "parameters": [],
+                              "type": "function"
+                            }
+                          ],
+                          "groupBy": [
+                            {
+                              "property": {
+                                "type": "string"
+                              },
+                              "type": "groupBy"
+                            }
+                          ],
+                          "limit": 50
+                        }
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "table",
+            "version": "13.0.2",
+            "spec": {
+              "options": {
+                "cellHeight": "sm",
+                "showHeader": true,
+                "sortBy": [
+                  {
+                    "desc": false,
+                    "displayName": "Insumo"
+                  }
+                ]
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "green"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
+                  },
+                  "custom": {
+                    "align": "auto",
+                    "cellOptions": {
+                      "type": "auto"
+                    },
+                    "filterable": true,
+                    "footer": {
+                      "reducers": []
+                    },
+                    "inspect": false
+                  }
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "preco_medio"
+                    },
+                    "properties": [
+                      {
+                        "id": "unit",
+                        "value": "currencyBRL"
+                      },
+                      {
+                        "id": "displayName",
+                        "value": "Preço Médio/Un."
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "preco_minimo"
+                    },
+                    "properties": [
+                      {
+                        "id": "unit",
+                        "value": "currencyBRL"
+                      },
+                      {
+                        "id": "displayName",
+                        "value": "Melhor Preço"
+                      },
+                      {
+                        "id": "custom.cellOptions",
+                        "value": {
+                          "type": "color-background"
+                        }
+                      },
+                      {
+                        "id": "thresholds",
+                        "value": {
+                          "mode": "absolute",
+                          "steps": [
+                            {
+                              "color": "green",
+                              "value": 0
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "insumo"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "Insumo"
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "fornecedor_recomendado"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "Fornecedor Recomendado"
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "telefone"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "Telefone"
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "whatsapp"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "WhatsApp"
+                      },
+                      {
+                        "id": "custom.cellOptions",
+                        "value": {
+                          "type": "auto"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "total_compras"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "Qtd. Compras"
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "panel-4": {
+        "kind": "Panel",
+        "spec": {
+          "id": 4,
+          "title": "Insumos sem Movimentação no Mês",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "mysql",
+                      "version": "v0",
+                      "datasource": { "type": "mysql", "uid": "mysql-toomate" },
+                      "spec": {
+                        "format": "table",
+                        "rawSql": "SELECT COUNT(DISTINCT i.idInsumo) AS value FROM insumo i WHERE i.ativo = 1 AND i.idInsumo NOT IN ( SELECT DISTINCT l2.fkMarca FROM lote l2 INNER JOIN historicoLote h ON h.fkLote = l2.idLote WHERE MONTH(h.dataHoraAlteracao) = MONTH(CURDATE()) AND YEAR(h.dataHoraAlteracao) = YEAR(CURDATE()) );"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "13.0.2",
+            "spec": {
+              "options": {
+                "colorMode": "background",
+                "graphMode": "none",
+                "justifyMode": "center",
+                "orientation": "auto",
+                "percentChangeColorMode": "standard",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "textMode": "auto",
+                "wideLayout": true
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "short",
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "orange"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-5": {
+        "kind": "Panel",
+        "spec": {
+          "id": 5,
+          "title": "Valor Total em Estoque Ativo",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "mysql",
+                      "version": "v0",
+                      "datasource": { "type": "mysql", "uid": "mysql-toomate" },
+                      "spec": {
+                        "format": "table",
+                        "rawSql": "SELECT SUM(l.quantidadeAtual * l.precoUnit) AS value FROM lote l WHERE l.ativo = 1;"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "13.0.2",
+            "spec": {
+              "options": {
+                "colorMode": "background",
+                "graphMode": "none",
+                "justifyMode": "center",
+                "orientation": "auto",
+                "percentChangeColorMode": "standard",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "textMode": "auto",
+                "wideLayout": true
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "currencyBRL",
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "purple"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-50": {
+        "kind": "Panel",
+        "spec": {
+          "id": 50,
+          "title": "Evolução Mensal de Retiradas por Categoria (Últimos 6 Meses)",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "mysql",
+                      "version": "v0",
+                      "datasource": { "type": "mysql", "uid": "mysql-toomate" },
+                      "spec": {
+                        "format": "time_series",
+                        "rawSql": "SELECT UNIX_TIMESTAMP(STR_TO_DATE(DATE_FORMAT(h.dataHoraAlteracao, '%Y-%m-01'), '%Y-%m-%d')) * 1000 AS time, c.nome AS metric, SUM(h.quantidadeRetirada) AS value FROM historicoLote h INNER JOIN lote l ON l.idLote = h.fkLote INNER JOIN marca m ON m.idMarca = l.fkMarca INNER JOIN insumo i ON i.idInsumo = m.fkInsumo INNER JOIN categoria c ON c.idCategoria = i.fkCategoria WHERE h.dataHoraAlteracao >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH) GROUP BY UNIX_TIMESTAMP(STR_TO_DATE(DATE_FORMAT(h.dataHoraAlteracao, '%Y-%m-01'), '%Y-%m-%d')) * 1000, c.idCategoria, c.nome ORDER BY time ASC;"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "timeseries",
+            "version": "13.0.2",
+            "spec": {
+              "options": {
+                "annotations": {
+                  "clustering": -1,
+                  "multiLane": false
+                },
+                "legend": {
+                  "calcs": [
+                    "sum",
+                    "mean"
+                  ],
+                  "displayMode": "table",
+                  "placement": "right",
+                  "showLegend": true
+                },
+                "tooltip": {
+                  "hideZeros": false,
+                  "mode": "multi",
+                  "sort": "desc"
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "short",
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "green"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "palette-classic"
+                  },
+                  "custom": {
+                    "axisBorderShow": false,
+                    "axisCenteredZero": false,
+                    "axisColorMode": "text",
+                    "axisLabel": "",
+                    "axisPlacement": "auto",
+                    "barAlignment": 0,
+                    "barWidthFactor": 0.6,
+                    "drawStyle": "bars",
+                    "fillOpacity": 70,
+                    "gradientMode": "none",
+                    "hideFrom": {
+                      "legend": false,
+                      "tooltip": false,
+                      "viz": false
+                    },
+                    "insertNulls": false,
+                    "lineInterpolation": "linear",
+                    "lineWidth": 2,
+                    "pointSize": 5,
+                    "scaleDistribution": {
+                      "type": "linear"
+                    },
+                    "showPoints": "never",
+                    "showValues": false,
+                    "spanNulls": false,
+                    "stacking": {
+                      "group": "A",
+                      "mode": "none"
+                    },
+                    "thresholdsStyle": {
+                      "mode": "off"
+                    }
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-60": {
+        "kind": "Panel",
+        "spec": {
+          "id": 60,
+          "title": "Previsão de Ruptura de Estoque — Insumos de Alta Rotatividade",
+          "description": "Baseado na média de retiradas dos últimos 30 dias. Vermelho = menos de 4 dias, Amarelo = menos de 7 dias.",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "mysql",
+                      "version": "v0",
+                      "datasource": { "type": "mysql", "uid": "mysql-toomate" },
+                      "spec": {
+                        "format": "table",
+                        "rawSql": "SELECT i.nome AS insumo, c.nome AS categoria, COALESCE(SUM(l.quantidadeAtual), 0) AS estoque_atual, ROUND(COALESCE(hist.total_retirado, 0) / 30, 2) AS media_retirada_dia, ROUND(COALESCE(SUM(l.quantidadeAtual), 0) / NULLIF(ROUND(COALESCE(hist.total_retirado, 0) / 30, 2), 0), 0) AS dias_ate_zerar FROM insumo i INNER JOIN categoria c ON c.idCategoria = i.fkCategoria LEFT JOIN marca m ON m.fkInsumo = i.idInsumo LEFT JOIN lote l ON l.fkMarca = m.idMarca AND l.ativo = 1 LEFT JOIN ( SELECT m2.fkInsumo, SUM(h.quantidadeRetirada) AS total_retirado FROM historicoLote h INNER JOIN lote l2 ON l2.idLote = h.fkLote INNER JOIN marca m2 ON m2.idMarca = l2.fkMarca WHERE h.dataHoraAlteracao >= DATE_SUB(CURDATE(), INTERVAL 30 DAY) GROUP BY m2.fkInsumo ) hist ON hist.fkInsumo = i.idInsumo WHERE i.ativo = 1 AND i.rotatividade = 1 GROUP BY i.idInsumo, i.nome, c.nome, hist.total_retirado HAVING media_retirada_dia > 0 ORDER BY dias_ate_zerar ASC;"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "table",
+            "version": "13.0.2",
+            "spec": {
+              "options": {
+                "cellHeight": "sm",
+                "showHeader": true,
+                "sortBy": [
+                  {
+                    "desc": false,
+                    "displayName": "Dias até Zerar"
+                  }
+                ]
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "green"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
+                  },
+                  "custom": {
+                    "align": "auto",
+                    "cellOptions": {
+                      "type": "auto"
+                    },
+                    "filterable": true,
+                    "footer": {
+                      "reducers": []
+                    },
+                    "inspect": false
+                  }
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "estoque_atual"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "Estoque Atual"
+                      },
+                      {
+                        "id": "custom.cellOptions",
+                        "value": {
+                          "type": "color-background"
+                        }
+                      },
+                      {
+                        "id": "thresholds",
+                        "value": {
+                          "mode": "absolute",
+                          "steps": [
+                            {
+                              "color": "red",
+                              "value": 0
+                            },
+                            {
+                              "color": "yellow",
+                              "value": 3
+                            },
+                            {
+                              "color": "green",
+                              "value": 10
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "media_retirada_dia"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "Média Retirada/Dia"
+                      },
+                      {
+                        "id": "decimals",
+                        "value": 1
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "dias_ate_zerar"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "Dias até Zerar"
+                      },
+                      {
+                        "id": "custom.cellOptions",
+                        "value": {
+                          "type": "color-background"
+                        }
+                      },
+                      {
+                        "id": "thresholds",
+                        "value": {
+                          "mode": "absolute",
+                          "steps": [
+                            {
+                              "color": "red",
+                              "value": 0
+                            },
+                            {
+                              "color": "yellow",
+                              "value": 4
+                            },
+                            {
+                              "color": "green",
+                              "value": 8
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "insumo"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "Insumo"
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "categoria"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "Categoria"
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "layout": {
+      "kind": "RowsLayout",
+      "spec": {
+        "rows": [
+          {
+            "kind": "RowsLayoutRow",
+            "spec": {
+              "title": "📊 Visão Geral do Mês Atual",
+              "collapse": false,
+              "layout": {
+                "kind": "GridLayout",
+                "spec": {
+                  "items": [
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 0,
+                        "y": 0,
+                        "width": 6,
+                        "height": 4,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-1"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 6,
+                        "y": 0,
+                        "width": 7,
+                        "height": 4,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-4"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 13,
+                        "y": 0,
+                        "width": 6,
+                        "height": 4,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-5"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "kind": "RowsLayoutRow",
+            "spec": {
+              "title": "🔥 Insumos Mais Utilizados",
+              "collapse": false,
+              "layout": {
+                "kind": "GridLayout",
+                "spec": {
+                  "items": [
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 0,
+                        "y": 0,
+                        "width": 12,
+                        "height": 8,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-10"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 12,
+                        "y": 0,
+                        "width": 12,
+                        "height": 8,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-11"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "kind": "RowsLayoutRow",
+            "spec": {
+              "title": "📈 Recomendações de Reposição",
+              "collapse": false,
+              "layout": {
+                "kind": "GridLayout",
+                "spec": {
+                  "items": [
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 0,
+                        "y": 0,
+                        "width": 24,
+                        "height": 11,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-20"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 0,
+                        "y": 11,
+                        "width": 24,
+                        "height": 10,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-21"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "kind": "RowsLayoutRow",
+            "spec": {
+              "title": "🏷️ Recomendação de Fornecedores por Preço",
+              "collapse": false,
+              "layout": {
+                "kind": "GridLayout",
+                "spec": {
+                  "items": [
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 0,
+                        "y": 0,
+                        "width": 24,
+                        "height": 10,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-30"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "kind": "RowsLayoutRow",
+            "spec": {
+              "title": "📉 Tendência de Consumo (Últimos 6 Meses)",
+              "collapse": false,
+              "layout": {
+                "kind": "GridLayout",
+                "spec": {
+                  "items": [
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 0,
+                        "y": 0,
+                        "width": 24,
+                        "height": 10,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-50"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "kind": "RowsLayoutRow",
+            "spec": {
+              "title": "💡 Insumos de Alta Rotatividade — Atenção Especial",
+              "collapse": false,
+              "layout": {
+                "kind": "GridLayout",
+                "spec": {
+                  "items": [
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 0,
+                        "y": 0,
+                        "width": 24,
+                        "height": 10,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-60"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    "links": [],
+    "liveNow": false,
+    "preload": false,
+    "tags": [
+      "estoque",
+      "restaurante",
+      "recomendacoes",
+      "insumos"
+    ],
+    "timeSettings": {
+      "timezone": "America/Sao_Paulo",
+      "from": "now-6M",
+      "to": "now",
+      "autoRefresh": "1h",
+      "autoRefreshIntervals": [
+        "5s",
+        "10s",
+        "30s",
+        "1m",
+        "5m",
+        "15m",
+        "30m",
+        "1h",
+        "2h",
+        "1d"
+      ],
+      "hideTimepicker": false,
+      "weekStart": "monday",
+      "fiscalYearStartMonth": 0
+    },
+    "title": "Recomendações de Estoque — Restaurante v2",
+    "variables": []
+  }
+}
